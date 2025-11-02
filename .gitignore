@@ -54,3 +54,4 @@ backend/.env
 
 # Generated CVs
 backend/generated_cvs/
+.vercel
