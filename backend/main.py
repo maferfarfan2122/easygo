@@ -25,6 +25,7 @@ import os
 import time
 import asyncio
 import re
+from urllib.parse import quote
 from dotenv import load_dotenv
 from typing import Optional, Dict, List
 
@@ -452,12 +453,15 @@ async def generate_cv(
         elapsed = time.time() - start_time
         print(f"✅ PDF generado en {elapsed:.2f}s (sin OpenAI)")
         
+        # Codificar filename para soportar caracteres Unicode
+        encoded_filename = quote(filename.encode('utf-8'))
+        
         # Devolver PDF como respuesta
         return StreamingResponse(
             pdf_buffer,
             media_type="application/pdf",
             headers={
-                "Content-Disposition": f"attachment; filename={filename}",
+                "Content-Disposition": f"attachment; filename*=UTF-8''{encoded_filename}",
                 "X-Tokens-Remaining": str(token_manager.get_user_tokens(user_id)),
                 "X-Processing-Time": f"{elapsed:.2f}s"
             }
@@ -520,12 +524,15 @@ async def generate_cv_without_optimization(
         full_name = request.personal_info.full_name.replace(" ", "_")
         filename = f"{full_name}_CV.pdf"
         
+        # Codificar filename para soportar caracteres Unicode
+        encoded_filename = quote(filename.encode('utf-8'))
+        
         # Devolver PDF como respuesta
         return StreamingResponse(
             pdf_buffer,
             media_type="application/pdf",
             headers={
-                "Content-Disposition": f"attachment; filename={filename}",
+                "Content-Disposition": f"attachment; filename*=UTF-8''{encoded_filename}",
                 "X-Tokens-Remaining": str(token_manager.get_user_tokens(user_id))
             }
         )
@@ -1158,12 +1165,17 @@ async def optimize_pdf_file(
         elapsed = time.time() - start_time
         print(f"✅ PDF optimized in {elapsed:.2f}s")
         
+        # Sanitizar filename para evitar problemas de encoding
+        safe_filename = f"optimized_{file.filename}"
+        # Usar RFC 5987 encoding para soportar caracteres Unicode
+        encoded_filename = quote(safe_filename.encode('utf-8'))
+        
         # Retornar PDF optimizado
         return StreamingResponse(
             optimized_pdf_buffer,
             media_type="application/pdf",
             headers={
-                "Content-Disposition": f"attachment; filename=optimized_{file.filename}",
+                "Content-Disposition": f"attachment; filename*=UTF-8''{encoded_filename}",
                 "X-Processing-Time": f"{elapsed:.2f}s",
                 "X-Original-ATS-Score": str(analysis['ats_score']),
                 "X-Weak-Verbs-Fixed": str(analysis['weak_verbs_found']),
