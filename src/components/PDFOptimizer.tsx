@@ -226,83 +226,86 @@ const PDFOptimizer = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-pink-50 py-12 px-4">
-      <div className="max-w-5xl mx-auto">
-        {/* Header mejorado */}
-        <div className="text-center mb-10 animate-fade-in">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl mb-4 shadow-lg">
-            <FileText className="w-10 h-10 text-white" />
-          </div>
-          <h1 className="text-5xl font-extrabold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-3">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-20 px-4">
+      <div className="max-w-4xl mx-auto">
+        {/* Header estilo Apple */}
+        <div className="text-center mb-16 animate-fade-in">
+          <h1 className="text-6xl md:text-7xl font-semibold text-gray-900 mb-6 tracking-tight">
             Optimizador de PDF
           </h1>
-          <p className="text-xl text-gray-600 mb-4">
-            Reduce el tamaño de cualquier PDF hasta un <span className="font-bold text-pink-600">85%</span>
+          <p className="text-2xl text-gray-600 font-light mb-8">
+            Reduce el tamaño de tus archivos hasta un <span className="font-semibold text-gray-900">85%</span>
           </p>
-          <div className="flex items-center justify-center gap-6 text-sm text-gray-500">
-            <span className="flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm">
-              <Zap className="w-4 h-4 text-yellow-500" /> 
-              <span className="font-medium">Ultra rápido</span>
+          <div className="inline-flex items-center gap-8 text-sm text-gray-500 font-medium">
+            <span className="flex items-center gap-2">
+              <Zap className="w-4 h-4" /> 
+              Instantáneo
             </span>
-            <span className="flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm">
-              <CheckCircle className="w-4 h-4 text-green-500" /> 
-              <span className="font-medium">100% GRATIS</span>
+            <span className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4" /> 
+              Gratis
             </span>
-            <span className="flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm">
-              <Sparkles className="w-4 h-4 text-purple-500" /> 
-              <span className="font-medium">Sin IA</span>
+            <span className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4" /> 
+              Sin IA
             </span>
           </div>
         </div>
 
-        {/* Upload Area mejorada */}
+        {/* Upload Area estilo Apple */}
         <div
-          className={`relative border-3 border-dashed rounded-2xl p-12 mb-8 text-center transition-all duration-300 cursor-pointer ${
+          className={`relative rounded-3xl mb-12 text-center transition-all duration-500 ${
             dragActive 
-              ? 'border-purple-500 bg-purple-50 scale-105 shadow-2xl animate-pulse-border' 
+              ? 'bg-blue-50 border-2 border-blue-500 scale-[1.02]' 
               : file 
-              ? 'border-green-400 bg-green-50 shadow-xl'
-              : 'border-gray-300 bg-white hover:border-purple-400 hover:shadow-xl hover:scale-102 hover:bg-purple-50/30'
+              ? 'bg-white border-2 border-green-500 shadow-xl'
+              : 'bg-white border-2 border-gray-200 hover:border-gray-300 hover:shadow-lg'
           }`}
           onDrop={handleDrop}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onClick={() => !file && document.getElementById('file-input')?.click()}
         >
-          {file ? (
-            <div className="animate-slide-up">
-              <div className="flex items-center justify-center mb-4">
-                <FileText className="w-16 h-16 text-green-600" />
+          <div className="p-16 cursor-pointer">
+            {file ? (
+              <div className="animate-slide-up">
+                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <FileText className="w-10 h-10 text-green-600" />
+                </div>
+                <p className="text-xl font-semibold text-gray-900 mb-2">{file.name}</p>
+                <p className="text-base text-gray-500 mb-8">
+                  {(file.size / (1024 * 1024)).toFixed(2)} MB
+                </p>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeFile();
+                  }}
+                  className="inline-flex items-center gap-2 px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full transition-colors font-medium text-sm"
+                >
+                  <X className="w-4 h-4" />
+                  Eliminar
+                </button>
               </div>
-              <p className="text-2xl font-bold text-gray-800 mb-2">{file.name}</p>
-              <p className="text-lg text-gray-600 mb-4">
-                📦 {(file.size / (1024 * 1024)).toFixed(2)} MB
-              </p>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  removeFile();
-                }}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-colors"
-              >
-                <X className="w-4 h-4" />
-                Quitar archivo
-              </button>
-            </div>
-          ) : (
-            <div className="animate-fade-in">
-              <Upload className={`w-16 h-16 mx-auto mb-4 transition-all duration-500 ${dragActive ? 'scale-125 text-purple-600 animate-bounce' : 'text-gray-400'}`} />
-              <p className="text-2xl font-semibold text-gray-700 mb-2">
-                {dragActive ? '¡Suelta aquí!' : 'Arrastra tu PDF aquí'}
-              </p>
-              <p className="text-gray-500 mb-4">
-                o haz clic para seleccionar
-              </p>
-              <p className="text-sm text-gray-400">
-                Cualquier tipo de PDF: facturas, reportes, CVs, contratos, etc.
-              </p>
-            </div>
-          )}
+            ) : (
+              <div className="animate-fade-in">
+                <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 transition-all duration-300 ${
+                  dragActive ? 'bg-blue-100' : 'bg-gray-100'
+                }`}>
+                  <Upload className={`w-10 h-10 transition-colors ${dragActive ? 'text-blue-600' : 'text-gray-400'}`} />
+                </div>
+                <p className="text-xl font-semibold text-gray-900 mb-2">
+                  {dragActive ? 'Suelta tu archivo' : 'Arrastra un PDF'}
+                </p>
+                <p className="text-base text-gray-500 mb-4">
+                  o haz clic para seleccionar
+                </p>
+                <p className="text-sm text-gray-400">
+                  Soporta cualquier tipo de PDF
+                </p>
+              </div>
+            )}
+          </div>
           <input
             id="file-input"
             type="file"
@@ -312,81 +315,69 @@ const PDFOptimizer = () => {
           />
         </div>
 
-        {/* Mode Toggle mejorado */}
-        <div className="flex gap-3 mb-8">
+        {/* Mode Toggle estilo Apple */}
+        <div className="flex gap-4 mb-12 bg-gray-100 p-2 rounded-2xl">
           <button
             onClick={() => setMode('analyze')}
-            className={`flex-1 py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-300 ${
+            className={`flex-1 py-3.5 px-6 rounded-xl font-medium text-base transition-all duration-300 ${
               mode === 'analyze'
-                ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg scale-105'
-                : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-blue-300 hover:shadow-md'
+                ? 'bg-white text-gray-900 shadow-md'
+                : 'text-gray-600 hover:text-gray-900'
             }`}
           >
             <div className="flex items-center justify-center gap-2">
               <TrendingUp className="w-5 h-5" />
-              Solo Analizar
+              Analizar
             </div>
           </button>
           <button
             onClick={() => setMode('optimize')}
-            className={`flex-1 py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-300 ${
+            className={`flex-1 py-3.5 px-6 rounded-xl font-medium text-base transition-all duration-300 ${
               mode === 'optimize'
-                ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg scale-105'
-                : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-green-300 hover:shadow-md'
+                ? 'bg-white text-gray-900 shadow-md'
+                : 'text-gray-600 hover:text-gray-900'
             }`}
           >
             <div className="flex items-center justify-center gap-2">
               <Sparkles className="w-5 h-5" />
-              Optimizar & Descargar
+              Optimizar
             </div>
           </button>
         </div>
 
-        {/* Optimization Mode Selector mejorado */}
+        {/* Optimization Mode Selector estilo Apple */}
         {mode === 'optimize' && (
-          <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl p-8 mb-8 border-2 border-gray-100 shadow-lg animate-slide-down">
-            <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-              <Gauge className="w-6 h-6 text-purple-600" />
-              Modo de Optimización:
+          <div className="bg-white rounded-3xl p-10 mb-12 border border-gray-200 shadow-sm animate-slide-down">
+            <h3 className="text-xl font-semibold text-gray-900 mb-8 text-center">
+              Elige el nivel de compresión
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {(['light', 'medium', 'aggressive'] as const).map((modeName) => {
                 const isSelected = optimizationMode === modeName;
-                const colorClass = modeName === 'light' ? 'mode-light' : modeName === 'medium' ? 'mode-medium' : 'mode-aggressive';
                 
                 return (
                   <button
                     key={modeName}
                     onClick={() => setOptimizationMode(modeName)}
-                    className={`group relative p-6 rounded-xl border-2 transition-all duration-300 transform ${
+                    className={`relative p-8 rounded-2xl border-2 transition-all duration-300 ${
                       isSelected
-                        ? `${colorClass}-selected shadow-xl scale-105`
-                        : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-lg hover:scale-102'
+                        ? 'border-gray-900 bg-gray-50 shadow-md'
+                        : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
                     }`}
                   >
                     {isSelected && (
-                      <div className="absolute -top-3 -right-3 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center shadow-lg animate-bounce">
-                        <CheckCircle className="w-5 h-5 text-white" />
+                      <div className="absolute -top-2 -right-2 w-6 h-6 bg-gray-900 rounded-full flex items-center justify-center">
+                        <CheckCircle className="w-4 h-4 text-white" />
                       </div>
                     )}
-                    <div className="flex items-center justify-center mb-3">
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
-                        isSelected 
-                          ? `${colorClass}-icon` 
-                          : 'bg-gray-100 text-gray-400 group-hover:bg-gray-200'
-                      }`}>
+                    <div className="text-center">
+                      <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                         {getModeIcon(modeName)}
                       </div>
-                    </div>
-                    <div className="text-center">
-                      <div className={`text-xl font-bold capitalize mb-2 transition-colors ${
-                        isSelected 
-                          ? `${colorClass}-text` 
-                          : 'text-gray-700'
-                      }`}>
+                      <div className="text-lg font-semibold text-gray-900 mb-2 capitalize">
                         {modeName === 'light' ? 'Ligero' : modeName === 'medium' ? 'Medio' : 'Agresivo'}
                       </div>
-                      <div className="text-sm text-gray-600 leading-tight">
+                      <div className="text-sm text-gray-500 leading-relaxed">
                         {getModeDescription(modeName)}
                       </div>
                     </div>
@@ -397,96 +388,87 @@ const PDFOptimizer = () => {
           </div>
         )}
 
-        {/* Progress Bar */}
+        {/* Progress Bar estilo Apple */}
         {loading && (
-          <div className="mb-8 animate-fade-in">
-            <div className="bg-white rounded-xl p-6 shadow-xl border-2 border-purple-100">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-lg font-semibold text-gray-700 flex items-center gap-2">
-                  <div className="w-2 h-2 bg-purple-600 rounded-full animate-ping"></div>
-                  {mode === 'analyze' ? 'Analizando...' : 'Optimizando...'}
+          <div className="mb-12 animate-fade-in">
+            <div className="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-base font-medium text-gray-900">
+                  {mode === 'analyze' ? 'Analizando' : 'Optimizando'}
                 </span>
-                <span className="text-lg font-bold text-purple-600">{progress}%</span>
+                <span className="text-base font-semibold text-gray-900">{progress}%</span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden shadow-inner">
+              <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
                 <div 
-                  className="h-full rounded-full transition-all duration-300 ease-out relative overflow-hidden"
-                  style={{ 
-                    width: `${progress}%`,
-                    background: 'linear-gradient(90deg, #a855f7 0%, #ec4899 50%, #a855f7 100%)',
-                    backgroundSize: '200% 100%'
-                  }}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer"></div>
-                </div>
+                  className="h-full bg-gray-900 rounded-full transition-all duration-300 ease-out"
+                  style={{ width: `${progress}%` }}
+                />
               </div>
-              <p className="text-xs text-gray-500 mt-2 text-center">
-                {progress < 30 ? 'Iniciando procesamiento...' : 
-                 progress < 70 ? 'Procesando páginas...' : 
+              <p className="text-sm text-gray-500 mt-4 text-center font-light">
+                {progress < 30 ? 'Iniciando...' : 
+                 progress < 70 ? 'Procesando...' : 
                  progress < 95 ? 'Casi listo...' : 
-                 '¡Finalizando!'}
+                 'Finalizando'}
               </p>
             </div>
           </div>
         )}
 
-        {/* Action Button mejorado */}
+        {/* Action Button estilo Apple */}
         <button
           onClick={mode === 'analyze' ? handleAnalyze : handleOptimize}
           disabled={!file || loading}
-          className={`w-full py-5 px-8 rounded-xl font-bold text-xl transition-all duration-300 shadow-lg ${
-            loading
-              ? 'bg-gray-400 cursor-not-allowed'
-              : mode === 'analyze'
-              ? 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white hover:shadow-2xl hover:scale-105'
-              : 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white hover:shadow-2xl hover:scale-105'
+          className={`w-full py-4 px-8 rounded-full font-medium text-base transition-all duration-300 ${
+            !file || loading
+              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              : 'bg-gray-900 text-white hover:bg-gray-800 active:scale-[0.98] shadow-md hover:shadow-lg'
           }`}
         >
           {loading ? (
             <span className="flex items-center justify-center gap-3">
-              <svg className="animate-spin h-6 w-6" viewBox="0 0 24 24">
+              <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
               </svg>
-              Procesando...
+              Procesando
             </span>
           ) : mode === 'analyze' ? (
             <span className="flex items-center justify-center gap-2">
-              <TrendingUp className="w-6 h-6" />
+              <TrendingUp className="w-5 h-5" />
               Analizar PDF
             </span>
           ) : (
             <span className="flex items-center justify-center gap-2">
-              <Sparkles className="w-6 h-6" />
-              Optimizar & Descargar ({optimizationMode})
+              <Sparkles className="w-5 h-5" />
+              Optimizar y Descargar
             </span>
           )}
         </button>
 
-        {/* Error Message mejorado */}
+        {/* Error Message estilo Apple */}
         {error && (
-          <div className="mt-8 p-6 bg-gradient-to-r from-red-50 to-pink-50 border-l-4 border-red-500 rounded-xl shadow-lg animate-shake">
+          <div className="mt-12 p-6 bg-red-50 border border-red-200 rounded-2xl animate-fade-in">
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0">
-                <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center">
-                  <AlertCircle className="w-6 h-6 text-white" />
+                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                  <AlertCircle className="w-5 h-5 text-red-600" />
                 </div>
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-bold text-red-800 mb-1">Error</h3>
-                <p className="text-red-700">{error}</p>
-                <div className="mt-3 text-sm text-red-600 bg-red-100 px-3 py-2 rounded-lg">
-                  <strong>💡 Sugerencias:</strong>
-                  <ul className="mt-1 ml-4 list-disc space-y-1">
-                    <li>Verifica que el archivo sea un PDF válido</li>
-                    <li>Intenta con un modo de optimización más ligero</li>
-                    <li>Asegúrate que el PDF no esté dañado</li>
+                <h3 className="text-base font-semibold text-red-900 mb-1">Algo salió mal</h3>
+                <p className="text-sm text-red-700 font-light">{error}</p>
+                <div className="mt-3 text-xs text-red-600 bg-white/50 px-3 py-2 rounded-lg">
+                  <p className="font-medium mb-1">Intenta lo siguiente:</p>
+                  <ul className="space-y-1 ml-4 list-disc">
+                    <li>Verifica que sea un PDF válido</li>
+                    <li>Prueba con un modo más ligero</li>
+                    <li>Asegúrate que el archivo no esté dañado</li>
                   </ul>
                 </div>
               </div>
               <button
                 onClick={() => setError(null)}
-                className="flex-shrink-0 text-red-500 hover:text-red-700 transition-colors"
+                className="flex-shrink-0 text-red-400 hover:text-red-600 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -494,38 +476,36 @@ const PDFOptimizer = () => {
           </div>
         )}
 
-        {/* Analysis Results mejorado */}
+        {/* Analysis Results estilo Apple */}
         {analysis && mode === 'analyze' && analysis.analysis && (
-          <div className="mt-8 bg-white rounded-2xl p-8 border-2 border-blue-100 shadow-xl animate-slide-up">
-            <h3 className="text-3xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
-                <TrendingUp className="w-7 h-7 text-white" />
-              </div>
+          <div className="mt-12 bg-white rounded-3xl p-10 border border-gray-200 shadow-sm animate-slide-up">
+            <h3 className="text-2xl font-semibold text-gray-900 mb-8 text-center">
               Análisis del PDF
             </h3>
             
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-5 border-2 border-blue-200 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer">
-                <div className="text-sm text-blue-700 font-medium mb-1">Tamaño</div>
-                <div className="text-3xl font-bold text-blue-600">
-                  {analysis.analysis.file_size_mb} MB
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+              <div className="text-center">
+                <div className="text-sm text-gray-500 mb-2 font-medium">Tamaño</div>
+                <div className="text-3xl font-semibold text-gray-900">
+                  {analysis.analysis.file_size_mb}
                 </div>
+                <div className="text-sm text-gray-500">MB</div>
               </div>
-              <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-5 border-2 border-purple-200 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer">
-                <div className="text-sm text-purple-700 font-medium mb-1">Páginas</div>
-                <div className="text-3xl font-bold text-purple-600">
+              <div className="text-center">
+                <div className="text-sm text-gray-500 mb-2 font-medium">Páginas</div>
+                <div className="text-3xl font-semibold text-gray-900">
                   {analysis.analysis.num_pages}
                 </div>
               </div>
-              <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-5 border-2 border-green-200 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer">
-                <div className="text-sm text-green-700 font-medium mb-1">Imágenes</div>
-                <div className="text-3xl font-bold text-green-600">
+              <div className="text-center">
+                <div className="text-sm text-gray-500 mb-2 font-medium">Imágenes</div>
+                <div className="text-3xl font-semibold text-gray-900">
                   {analysis.analysis.num_images}
                 </div>
               </div>
-              <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-5 border-2 border-orange-200 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer">
-                <div className="text-sm text-orange-700 font-medium mb-1">Potencial</div>
-                <div className="text-3xl font-bold text-orange-600 capitalize">
+              <div className="text-center">
+                <div className="text-sm text-gray-500 mb-2 font-medium">Potencial</div>
+                <div className="text-3xl font-semibold text-gray-900 capitalize">
                   {analysis.analysis.optimization_potential === 'high' ? 'Alto' : 
                    analysis.analysis.optimization_potential === 'medium' ? 'Medio' : 'Bajo'}
                 </div>
@@ -533,16 +513,15 @@ const PDFOptimizer = () => {
             </div>
 
             {analysis.recommendations && (
-              <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 border-2 border-purple-200">
-                <h4 className="font-bold text-lg text-gray-900 mb-4 flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-purple-600" />
-                  Reducción Estimada:
+              <div className="bg-gray-50 rounded-2xl p-6 border border-gray-200">
+                <h4 className="font-semibold text-base text-gray-900 mb-4">
+                  Reducción estimada por modo
                 </h4>
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {Object.entries(analysis.recommendations).map(([mode, rec]) => (
-                    <div key={mode} className="flex items-center justify-between bg-white rounded-lg p-4 shadow-sm">
-                      <span className="font-semibold capitalize text-gray-700">
-                        {mode === 'light' ? '🟦 Ligero' : mode === 'medium' ? '🟩 Medio' : '🟥 Agresivo'}:
+                    <div key={mode} className="flex items-center justify-between text-sm">
+                      <span className="font-medium text-gray-700 capitalize">
+                        {mode === 'light' ? 'Ligero' : mode === 'medium' ? 'Medio' : 'Agresivo'}
                       </span>
                       <span className="text-gray-600">{rec}</span>
                     </div>
@@ -553,62 +532,69 @@ const PDFOptimizer = () => {
           </div>
         )}
 
-        {/* Optimization Results mejorado */}
+        {/* Optimization Results estilo Apple */}
         {analysis && mode === 'optimize' && analysis.optimizationStats && (
-          <div className="mt-8 bg-white rounded-2xl p-8 border-2 border-green-100 shadow-xl animate-slide-up">
-            <div className="text-center mb-6">
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full mb-4 shadow-lg animate-bounce">
-                <CheckCircle className="w-10 h-10 text-white" />
+          <div className="mt-12 bg-white rounded-3xl p-10 border border-gray-200 shadow-sm animate-slide-up">
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle className="w-8 h-8 text-green-600" />
               </div>
-              <h3 className="text-3xl font-bold text-gray-900 mb-2">
-                ¡Optimización Completada!
+              <h3 className="text-2xl font-semibold text-gray-900 mb-2">
+                Optimización completa
               </h3>
-              <p className="text-gray-600">Tu PDF ha sido reducido exitosamente</p>
+              <p className="text-base text-gray-500 font-light">Tu PDF ha sido reducido exitosamente</p>
             </div>
             
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-5 border-2 border-blue-200 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer">
-                <div className="text-sm text-blue-700 font-medium mb-1">Original</div>
-                <div className="text-3xl font-bold text-blue-600">
-                  {analysis.optimizationStats.originalSizeMB} MB
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+              <div className="text-center">
+                <div className="text-sm text-gray-500 mb-2 font-medium">Original</div>
+                <div className="text-3xl font-semibold text-gray-900">
+                  {analysis.optimizationStats.originalSizeMB}
                 </div>
+                <div className="text-sm text-gray-500">MB</div>
               </div>
-              <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-5 border-2 border-green-200 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer">
-                <div className="text-sm text-green-700 font-medium mb-1">Optimizado</div>
-                <div className="text-3xl font-bold text-green-600">
-                  {analysis.optimizationStats.optimizedSizeMB} MB
+              <div className="text-center">
+                <div className="text-sm text-gray-500 mb-2 font-medium">Optimizado</div>
+                <div className="text-3xl font-semibold text-green-600">
+                  {analysis.optimizationStats.optimizedSizeMB}
                 </div>
+                <div className="text-sm text-gray-500">MB</div>
               </div>
-              <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-5 border-2 border-purple-200 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer">
-                <div className="text-sm text-purple-700 font-medium mb-1">Reducción</div>
-                <div className="text-3xl font-bold text-purple-600">
-                  {analysis.optimizationStats.reductionPercent}%
+              <div className="text-center">
+                <div className="text-sm text-gray-500 mb-2 font-medium">Reducción</div>
+                <div className="text-3xl font-semibold text-gray-900">
+                  {analysis.optimizationStats.reductionPercent}
                 </div>
+                <div className="text-sm text-gray-500">%</div>
               </div>
-              <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-5 border-2 border-orange-200 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer">
-                <div className="text-sm text-orange-700 font-medium mb-1">Páginas</div>
-                <div className="text-3xl font-bold text-orange-600">
+              <div className="text-center">
+                <div className="text-sm text-gray-500 mb-2 font-medium">Páginas</div>
+                <div className="text-3xl font-semibold text-gray-900">
                   {analysis.optimizationStats.pages}
                 </div>
               </div>
             </div>
 
             {optimizedPdfUrl && file && (
-              <a
-                href={optimizedPdfUrl}
-                download={`optimized_${optimizationMode}_${file.name}`}
-                className="flex items-center justify-center gap-3 w-full py-5 px-6 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl font-bold text-xl transition-all shadow-lg hover:shadow-2xl hover:scale-105"
+              <button
+                onClick={() => {
+                  const link = document.createElement('a');
+                  link.href = optimizedPdfUrl;
+                  link.download = `optimized_${optimizationMode}_${file.name}`;
+                  link.click();
+                }}
+                className="w-full py-4 px-8 bg-gray-900 text-white rounded-full font-medium text-base hover:bg-gray-800 active:scale-[0.98] transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
               >
-                <Download className="w-6 h-6" />
+                <Download className="w-5 h-5" />
                 Descargar PDF Optimizado
-              </a>
+              </button>
             )}
           </div>
         )}
       </div>
 
       <style>{`
-        /* Animaciones suaves */
+        /* Animaciones esenciales */
         @keyframes fade-in {
           from { 
             opacity: 0; 
@@ -648,17 +634,6 @@ const PDFOptimizer = () => {
           20%, 40%, 60%, 80% { transform: translateX(10px); }
         }
         
-        @keyframes pulse-border {
-          0%, 100% { 
-            border-color: rgb(168, 85, 247);
-            box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.4);
-          }
-          50% { 
-            border-color: rgb(236, 72, 153);
-            box-shadow: 0 0 0 10px rgba(236, 72, 153, 0);
-          }
-        }
-        
         .animate-fade-in {
           animation: fade-in 0.5s ease-out;
         }
@@ -675,166 +650,29 @@ const PDFOptimizer = () => {
           animation: shake 0.6s cubic-bezier(.36,.07,.19,.97) both;
         }
         
-        /* Mejoras de hover y scale */
-        .hover\\:scale-102:hover {
-          transform: scale(1.02);
-        }
-        
-        .scale-105 {
-          transform: scale(1.05);
-        }
-        
-        /* Estilos para modos de optimización - Light */
-        .mode-light-selected {
-          background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-          border-color: #3b82f6;
-        }
-        
-        .mode-light-icon {
-          background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-          color: white;
-        }
-        
-        .mode-light-text {
-          color: #1e40af;
-        }
-        
-        /* Estilos para modos de optimización - Medium */
-        .mode-medium-selected {
-          background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-          border-color: #10b981;
-        }
-        
-        .mode-medium-icon {
-          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-          color: white;
-        }
-        
-        .mode-medium-text {
-          color: #047857;
-        }
-        
-        /* Estilos para modos de optimización - Aggressive */
-        .mode-aggressive-selected {
-          background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-          border-color: #ef4444;
-        }
-        
-        .mode-aggressive-icon {
-          background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-          color: white;
-        }
-        
-        .mode-aggressive-text {
-          color: #b91c1c;
-        }
-        
-        /* Efecto de brillo en cards */
-        .shadow-xl {
-          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 
-                      0 10px 10px -5px rgba(0, 0, 0, 0.04),
-                      0 0 0 1px rgba(0, 0, 0, 0.05);
-        }
-        
-        .shadow-2xl {
-          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25),
-                      0 0 0 1px rgba(0, 0, 0, 0.05);
-        }
-        
-        /* Mejoras de borde para drag & drop */
-        .border-3 {
-          border-width: 3px;
-        }
-        
-        /* Animación de progreso */
-        .bg-gradient-to-r {
-          background-size: 200% 100%;
-          animation: gradient-shift 2s ease infinite;
-        }
-        
-        @keyframes gradient-shift {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-        
-        @keyframes shimmer {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-        }
-        
-        .animate-shimmer {
-          animation: shimmer 2s infinite;
-        }
-        
-        /* Mejoras de transición global */
-        * {
-          transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        /* Efectos de hover mejorados */
-        button:not(:disabled):hover {
-          transform: translateY(-2px);
-        }
-        
-        button:not(:disabled):active {
-          transform: translateY(0);
-        }
-        
-        /* Mejorar apariencia de badges */
-        .rounded-full {
-          backdrop-filter: blur(10px);
-        }
-        
-        /* Gradiente de texto más vibrante */
-        .bg-clip-text {
-          -webkit-background-clip: text;
-          background-clip: text;
-          -webkit-text-fill-color: transparent;
-        }
-        
-        /* Efecto de glow en success */
-        @keyframes glow {
-          0%, 100% {
-            box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
-          }
-          50% {
-            box-shadow: 0 0 40px rgba(16, 185, 129, 0.8);
-          }
-        }
-        
-        .animate-bounce {
-          animation: bounce 1s infinite, glow 2s ease-in-out infinite;
-        }
-        
         /* Responsive improvements */
         @media (max-width: 768px) {
-          .text-5xl {
-            font-size: 2.5rem;
+          .text-6xl {
+            font-size: 3rem;
           }
           
-          .text-3xl {
-            font-size: 1.875rem;
+          .text-7xl {
+            font-size: 3.5rem;
           }
           
-          .gap-6 {
-            gap: 1rem;
-          }
-          
-          .px-4 {
-            padding-left: 1rem;
-            padding-right: 1rem;
+          .text-2xl {
+            font-size: 1.5rem;
           }
         }
         
         /* Mejora de accesibilidad y focus */
         button:focus-visible,
         input:focus-visible {
-          outline: 3px solid #a855f7;
+          outline: 2px solid rgb(17 24 39);
           outline-offset: 2px;
         }
         
-        /* Smooth scroll para animaciones */
+        /* Smooth scroll */
         html {
           scroll-behavior: smooth;
         }
