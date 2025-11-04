@@ -1182,18 +1182,19 @@ async def analyze_pdf_file(
     file: UploadFile = File(..., description="PDF file to analyze")
 ):
     """
-    📊 PDF ANALYZER - Analiza PDFs de CV sin descargar (100% GRATIS)
+    📊 PDF ANALYZER - Analiza PDFs sin optimizar (100% GRATIS)
     
-    Analiza el PDF y retorna:
-    - ATS score
-    - Verbos débiles detectados
-    - Missing action verbs
-    - Sugerencias de mejora
+    Proporciona información detallada del PDF:
+    - Tamaño actual (MB)
+    - Número de páginas
+    - Número de imágenes detectadas
+    - Potencial de optimización (low/medium/high)
+    - Reducción estimada por modo
     
     Input: PDF file (multipart/form-data)
-    Output: JSON con análisis detallado
+    Output: JSON con estadísticas detalladas
     
-    Velocidad: ~1 segundo
+    Velocidad: <1 segundo
     Costo: GRATIS (0 tokens)
     """
     start_time = time.time()
@@ -1210,22 +1211,9 @@ async def analyze_pdf_file(
         
         # Leer archivo
         pdf_content = await file.read()
-        pdf_file = io.BytesIO(pdf_content)
         
-        # Extraer texto
-        text = pdf_optimizer.extract_text_from_pdf(pdf_file)
-        
-        if not text or len(text) < 50:
-            raise HTTPException(
-                status_code=400,
-                detail="Could not extract text from PDF"
-            )
-        
-        # Parsear estructura
-        cv_data = pdf_optimizer.parse_cv_structure(text)
-        
-        # Analizar
-        analysis = pdf_optimizer.analyze_pdf(cv_data)
+        # Analizar sin optimizar
+        analysis = pdf_optimizer.analyze_pdf(pdf_content)
         
         elapsed = time.time() - start_time
         print(f"✅ PDF analyzed in {elapsed:.2f}s")
@@ -1234,22 +1222,21 @@ async def analyze_pdf_file(
             "success": True,
             "filename": file.filename,
             "analysis": analysis,
-            "cv_structure": {
-                "has_name": bool(cv_data['name']),
-                "has_contact": len(cv_data['contact']) > 0,
-                "has_summary": bool(cv_data['summary']),
-                "experience_count": len(cv_data['experience']),
-                "skills_count": len(cv_data['skills']),
-                "education_count": len(cv_data['education'])
-            },
             "processing_time": f"{elapsed:.2f}s",
-            "cost": "FREE - No tokens used"
+            "cost": "FREE - No tokens used",
+            "recommendations": {
+                "light": f"Use light mode if quality is critical ({analysis.get('estimated_reduction', {}).get('light', '20-30%')} reduction)",
+                "medium": f"Use medium mode for balanced optimization ({analysis.get('estimated_reduction', {}).get('medium', '40-50%')} reduction)",
+                "aggressive": f"Use aggressive mode for maximum compression ({analysis.get('estimated_reduction', {}).get('aggressive', '60-70%')} reduction)"
+            }
         }
     
     except HTTPException:
         raise
     except Exception as e:
         print(f"❌ Error analyzing PDF: {str(e)}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 
