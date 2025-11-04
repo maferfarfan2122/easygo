@@ -41,11 +41,11 @@ Asegúrate de tener estas variables configuradas en Render:
 
 ```bash
 # OpenAI API Key (REQUERIDO)
-OPENAI_API_KEY=sk-proj-...
+OPENAI_API_KEY=sk-proj-tu_api_key_de_openai_aqui
 
 # Supabase (opcional para validación de usuarios)
-SUPABASE_URL=https://sjcerbejmrjcjcgqngdg.supabase.co
-SUPABASE_SERVICE_KEY=tu_service_key_aqui
+SUPABASE_URL=https://tu-proyecto.supabase.co
+SUPABASE_SERVICE_KEY=tu_service_role_key_de_supabase_aqui
 
 # Configuración
 DEBUG=False
@@ -59,8 +59,11 @@ Para agregar/editar variables:
 ### 4. **Verificar Deploy**
 
 ```bash
-# Health check
-curl https://easygo-1-mxb7.onrender.com/health
+#### 3. Verificar el Health Endpoint
+
+```bash
+curl https://easygo-backend-57s3.onrender.com/health
+```
 
 # Debería retornar:
 {
@@ -72,7 +75,7 @@ curl https://easygo-1-mxb7.onrender.com/health
 }
 
 # Ver documentación API
-https://easygo-1-mxb7.onrender.com/api/docs
+https://easygo-backend-57s3.onrender.com/api/docs
 ```
 
 ---
@@ -172,18 +175,18 @@ Ahora cada `git push` a `main` redesplegará automáticamente.
 
 ### **Test 1: Health Check**
 ```bash
-curl https://easygo-1-mxb7.onrender.com/health
+curl https://easygo-backend-57s3.onrender.com/health
 ```
 
 ### **Test 2: Ver Balance de Tokens**
 ```bash
-curl -X GET https://easygo-1-mxb7.onrender.com/api/user/tokens \
+curl -X GET https://easygo-backend-57s3.onrender.com/api/user/tokens \
   -H "X-User-ID: test_user_123"
 ```
 
 ### **Test 3: Consumir Tokens (Suggestions)**
 ```bash
-curl -X POST https://easygo-1-mxb7.onrender.com/api/cv/suggestions \
+curl -X POST https://easygo-backend-57s3.onrender.com/api/cv/suggestions \
   -H "Content-Type: application/json" \
   -H "X-User-ID: test_user_123" \
   -d '{
@@ -195,7 +198,7 @@ curl -X POST https://easygo-1-mxb7.onrender.com/api/cv/suggestions \
 ```bash
 # Hacer 11 requests rápidas (la 11va debería fallar)
 for i in {1..11}; do
-  curl -X POST https://easygo-1-mxb7.onrender.com/api/cv/suggestions \
+  curl -X POST https://easygo-backend-57s3.onrender.com/api/cv/suggestions \
     -H "Content-Type: application/json" \
     -H "X-User-ID: test_rate_limit" \
     -d '{"job_description": "test"}' &
@@ -205,13 +208,13 @@ done
 ### **Test 5: Verificar Caché**
 ```bash
 # 1ra request (consume token)
-curl -X POST https://easygo-1-mxb7.onrender.com/api/cv/suggestions \
+curl -X POST https://easygo-backend-57s3.onrender.com/api/cv/suggestions \
   -H "Content-Type: application/json" \
   -H "X-User-ID: test_cache" \
   -d '{"job_description": "Python Developer"}'
 
 # 2da request (caché, NO consume token)
-curl -X POST https://easygo-1-mxb7.onrender.com/api/cv/suggestions \
+curl -X POST https://easygo-backend-57s3.onrender.com/api/cv/suggestions \
   -H "Content-Type: application/json" \
   -H "X-User-ID: test_cache" \
   -d '{"job_description": "Python Developer"}'
@@ -295,7 +298,7 @@ async def verify_user(authorization: str):
 
 ## 📞 Contacto
 
-**URL Backend**: https://easygo-1-mxb7.onrender.com  
+**URL Backend**: https://easygo-backend-57s3.onrender.com  
 **URL Frontend**: https://easygo.com.es/  
 **GitHub Backend**: https://github.com/mfarfan-21/easygo.git  
 **GitHub Frontend**: https://github.com/maferfarfan2122/easygo
