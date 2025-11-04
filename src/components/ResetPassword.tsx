@@ -18,6 +18,7 @@ const ResetPassword = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isValidToken, setIsValidToken] = useState(false);
   const [checkingToken, setCheckingToken] = useState(true);
+  const [passwordChanged, setPasswordChanged] = useState(false);
 
   // Verificar que hay un token de recuperación válido
   useEffect(() => {
@@ -96,15 +97,13 @@ const ResetPassword = () => {
       if (error) {
         setMessage({ type: 'error', text: error });
       } else {
-        setMessage({ 
-          type: 'success', 
-          text: '¡Contraseña actualizada correctamente! Redirigiendo...' 
-        });
+        // Mostrar pantalla de éxito
+        setPasswordChanged(true);
         
-        // Redirigir al dashboard después de 2 segundos
+        // Redirigir al dashboard después de 3 segundos
         setTimeout(() => {
           navigate('/dashboard');
-        }, 2000);
+        }, 3000);
       }
     } catch (error) {
       setMessage({ 
@@ -125,8 +124,38 @@ const ResetPassword = () => {
       <div className="auth-page">
         <div className="auth-page__container">
           
-          {/* Loading State */}
-          {checkingToken ? (
+          {/* Success State - Password Changed */}
+          {passwordChanged ? (
+            <div className="auth-page__success">
+              <div className="auth-page__icon auth-page__icon--success">
+                <CheckCircle className="icon-large" />
+              </div>
+              <h1 className="auth-page__title">
+                ¡Contraseña Actualizada!
+              </h1>
+              <p className="auth-page__subtitle">
+                Tu contraseña ha sido cambiada exitosamente
+              </p>
+              <div className="auth-page__success-details">
+                <div className="auth-page__success-item">
+                  <CheckCircle className="icon-small" />
+                  <span>Contraseña segura establecida</span>
+                </div>
+                <div className="auth-page__success-item">
+                  <CheckCircle className="icon-small" />
+                  <span>Sesión actualizada</span>
+                </div>
+                <div className="auth-page__success-item">
+                  <CheckCircle className="icon-small" />
+                  <span>Redirigiendo a tu dashboard...</span>
+                </div>
+              </div>
+              <div className="auth-page__success-progress">
+                <div className="auth-page__success-progress-bar"></div>
+              </div>
+            </div>
+          ) : checkingToken ? (
+            /* Loading State */
             <div className="auth-page__loading">
               <div className="auth-page__icon">
                 <Loader2 className="icon-large icon-spin" />
@@ -347,6 +376,21 @@ const ResetPassword = () => {
 
           .auth-page__icon--error .icon-large {
             color: #dc2626;
+          }
+
+          .auth-page__icon--success {
+            background: #f0fdf4;
+            animation: successPulse 0.6s ease-out;
+          }
+
+          .auth-page__icon--success .icon-large {
+            color: #16a34a;
+          }
+
+          @keyframes successPulse {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
           }
 
           .auth-page__icon .icon-large {
@@ -588,6 +632,89 @@ const ResetPassword = () => {
             font-size: 12px;
             color: #9ca3af;
             margin: 0;
+          }
+
+          /* === SUCCESS STATE === */
+          .auth-page__success {
+            text-align: center;
+            animation: fadeInUp 0.5s ease-out;
+          }
+
+          @keyframes fadeInUp {
+            from {
+              opacity: 0;
+              transform: translateY(20px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+
+          .auth-page__success-details {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 24px;
+            padding: 32px;
+            margin-top: 32px;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+          }
+
+          .auth-page__success-item {
+            display: block;
+            padding: 12px 0;
+            font-size: 16px;
+            color: #111827;
+            animation: fadeInLeft 0.5s ease-out backwards;
+          }
+
+          .auth-page__success-item:nth-child(1) { animation-delay: 0.2s; }
+          .auth-page__success-item:nth-child(2) { animation-delay: 0.4s; }
+          .auth-page__success-item:nth-child(3) { animation-delay: 0.6s; }
+
+          @keyframes fadeInLeft {
+            from {
+              opacity: 0;
+              transform: translateX(-20px);
+            }
+            to {
+              opacity: 1;
+              transform: translateX(0);
+            }
+          }
+
+          .auth-page__success-item .icon-small {
+            width: 20px;
+            height: 20px;
+            color: #16a34a;
+            vertical-align: middle;
+            margin-right: 12px;
+            margin-top: -2px;
+          }
+
+          .auth-page__success-item span {
+            display: inline-block;
+            vertical-align: middle;
+          }
+
+          .auth-page__success-progress {
+            margin-top: 32px;
+            height: 4px;
+            background: #f3f4f6;
+            border-radius: 9999px;
+            overflow: hidden;
+          }
+
+          .auth-page__success-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #16a34a 0%, #22c55e 100%);
+            border-radius: 9999px;
+            animation: progressBar 3s ease-in-out;
+          }
+
+          @keyframes progressBar {
+            from { width: 0%; }
+            to { width: 100%; }
           }
 
           /* === ICONS === */
