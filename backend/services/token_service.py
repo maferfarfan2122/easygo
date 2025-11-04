@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Optional
 import hashlib
 import json
+import time
 
 
 class TokenManager:
@@ -159,6 +160,28 @@ class TokenManager:
                 for data in self.user_tokens.values()
             )
         }
+    
+    def clear_cache(self):
+        """Limpia el caché de requests"""
+        count = len(self.request_cache)
+        self.request_cache.clear()
+        print(f"🗑️ Token cache cleared: {count} entries removed")
+        return count
+    
+    def get_cached_response(self, request_hash: str):
+        """Obtiene una respuesta cacheada si existe y no ha expirado"""
+        if request_hash in self.request_cache:
+            cached_data = self.request_cache[request_hash]
+            cache_time = cached_data["timestamp"]
+            
+            # Check if cache is still valid
+            if time.time() - cache_time < self.CACHE_EXPIRY_MINUTES * 60:
+                return cached_data["result"]
+            else:
+                # Cache expired, remove it
+                del self.request_cache[request_hash]
+        
+        return None
 
 
 # Global token manager instance
