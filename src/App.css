@@ -1949,6 +1949,82 @@ button:disabled {
   .cta-supporting {
     font-size: 1rem;
   }
+}
+
+/* ============================================================================
+   TOKEN BALANCE COMPONENT
+   ============================================================================ */
+
+.token-balance {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, rgba(147, 51, 234, 0.1), rgba(236, 72, 153, 0.1));
+  border: 1px solid rgba(147, 51, 234, 0.2);
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #9333ea;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+}
+
+.token-balance:hover {
+  background: linear-gradient(135deg, rgba(147, 51, 234, 0.15), rgba(236, 72, 153, 0.15));
+  border-color: rgba(147, 51, 234, 0.3);
+  transform: translateY(-1px);
+}
+
+.token-balance.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.token-balance.error {
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(251, 146, 60, 0.1));
+}
+
+.token-balance.error:hover {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(251, 146, 60, 0.15));
+}
+
+.token-icon {
+  font-size: 1.125rem;
+  line-height: 1;
+}
+
+.token-count {
+  font-weight: 600;
+  font-size: 1rem;
+  min-width: 1.5rem;
+  text-align: center;
+}
+
+.token-label {
+  opacity: 0.8;
+  font-weight: 400;
+}
+
+/* Mobile token balance */
+@media (max-width: 768px) {
+  .token-balance {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+  
+  .token-icon {
+    font-size: 1rem;
+  }
+  
+  .token-count {
+    font-size: 0.9375rem;
+  }
+
+  }
 
   .cta-buttons {
     flex-direction: column;

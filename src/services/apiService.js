@@ -1,7 +1,10 @@
 /**
  * API Service - Centralized API calls with request management
  * Handles concurrent requests, request cancellation, retries, and rate limiting
+ * Includes token system integration
  */
+
+import { supabase } from '../lib/supabase';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
@@ -15,6 +18,59 @@ const RATE_LIMIT = {
   windowMs: 1000, // 1 second
   queue: [],
   timestamps: []
+};
+
+// Token tracking
+let userTokens = null;
+
+/**
+ * Get current user ID from Supabase
+ */
+const getUserId = async () => {
+  try {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error) throw error;
+    return user?.id || 'anonymous';
+  } catch (error) {
+    console.warn('Failed to get user ID:', error);
+    return 'anonymous';
+  }
+};
+
+/**
+ * Get user's token balance
+ */
+export const getUserTokenBalance = async () => {
+  try {
+    const userId = await getUserId();
+    const response = await fetch(`${API_URL}/api/user/tokens`, {
+      method: 'GET',
+      headers: {
+        'X-User-ID': userId
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to get token balance: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    userTokens = data.tokens_remaining;
+    return data;
+  } catch (error) {
+    console.error('Error getting token balance:', error);
+    return null;
+  }
+};
+
+/**
+ * Update local token count from response headers
+ */
+const updateTokensFromResponse = (response) => {
+  const tokensRemaining = response.headers.get('X-Tokens-Remaining');
+  if (tokensRemaining) {
+    userTokens = parseInt(tokensRemaining, 10);
+  }
 };
 
 /**
@@ -64,6 +120,7 @@ export const cancelAllRequests = () => {
 
 /**
  * Debounced fetch - prevents duplicate concurrent requests
+ * Now includes X-User-ID header for token system
  */
 const debouncedFetch = async (endpoint, options = {}, requestKey) => {
   // Cancel previous identical request if exists
@@ -76,6 +133,9 @@ const debouncedFetch = async (endpoint, options = {}, requestKey) => {
     throw new Error('Rate limit exceeded. Please wait a moment.');
   }
 
+  // Get user ID for token system
+  const userId = await getUserId();
+
   // Create abort controller for this request
   const controller = new AbortController();
   abortControllers.set(requestKey, controller);
@@ -86,6 +146,7 @@ const debouncedFetch = async (endpoint, options = {}, requestKey) => {
     signal: controller.signal,
     headers: {
       'Content-Type': 'application/json',
+      'X-User-ID': userId,
       ...options.headers
     }
   });
@@ -95,6 +156,9 @@ const debouncedFetch = async (endpoint, options = {}, requestKey) => {
 
   try {
     const response = await requestPromise;
+    
+    // Update tokens from response
+    updateTokensFromResponse(response);
     
     // Clean up
     abortControllers.delete(requestKey);

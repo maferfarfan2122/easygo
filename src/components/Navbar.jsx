@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import TokenBalance from './TokenBalance';
 
 const Navbar = () => {
   const { texts, language, toggleLanguage } = useLanguage();
@@ -91,6 +92,9 @@ const Navbar = () => {
           
           {user ? (
             <>
+              <li>
+                <TokenBalance />
+              </li>
               <li>
                 <Link 
                   to="/dashboard" 
