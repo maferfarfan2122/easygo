@@ -24,22 +24,36 @@ const ResetPassword = () => {
   useEffect(() => {
     const checkRecoveryToken = async () => {
       try {
-        // PRIMERO: Verificar si hay token en el hash (más rápido)
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const accessToken = hashParams.get('access_token');
-        const type = hashParams.get('type');
+        console.log('Checking recovery token...');
+        console.log('Current URL:', window.location.href);
+        console.log('Hash:', window.location.hash);
+        console.log('Search:', window.location.search);
         
-        console.log('Hash params:', { accessToken: !!accessToken, type });
+        // PRIMERO: Verificar si hay token en el hash (método correcto de Supabase)
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        let accessToken = hashParams.get('access_token');
+        let type = hashParams.get('type');
+        
+        // SEGUNDO: Si no está en hash, verificar query params (por si acaso)
+        if (!accessToken) {
+          const searchParams = new URLSearchParams(window.location.search);
+          accessToken = searchParams.get('access_token');
+          type = searchParams.get('type');
+          console.log('Checking query params:', { accessToken: !!accessToken, type });
+        }
+        
+        console.log('Token detection:', { accessToken: !!accessToken, type });
         
         if (accessToken && type === 'recovery') {
           // Hay un token de recuperación en la URL
-          console.log('Recovery token found in URL - Valid!');
+          console.log('✅ Recovery token found - Valid!');
           setIsValidToken(true);
           setCheckingToken(false);
           return;
         }
         
-        // SEGUNDO: Si no hay token en hash, verificar sesión
+        // TERCERO: Si no hay token, verificar sesión
+        console.log('No token in URL, checking session...');
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -51,11 +65,11 @@ const ResetPassword = () => {
           setIsValidToken(false);
         } else if (session?.user) {
           // Hay una sesión válida, el usuario puede cambiar la contraseña
-          console.log('Session found, user can reset password');
+          console.log('✅ Session found, user can reset password');
           setIsValidToken(true);
         } else {
           // No hay token ni sesión válida
-          console.log('No valid token or session found');
+          console.log('❌ No valid token or session found');
           setMessage({ 
             type: 'error', 
             text: 'No se encontró un token de recuperación válido. Por favor solicita un nuevo enlace desde la página de recuperación de contraseña.' 

@@ -33,35 +33,57 @@ https://www.easygo.com.es/*
 
 1. Ve a **Authentication** → **Email Templates**
 2. Selecciona **Reset Password**
-3. Verifica que el enlace use la plantilla correcta:
+3. **IMPORTANTE**: Usa `{{ .ConfirmationURL }}` (recomendado)
 
 ```html
+<a href="{{ .ConfirmationURL }}">Reset Password</a>
+```
+
+**❌ NO uses esto (causará error):**
+```html
+<!-- NO USAR: Formato incorrecto -->
 <a href="{{ .SiteURL }}/reset-password?access_token={{ .Token }}&type=recovery">
   Reset Password
 </a>
 ```
 
-O simplemente:
+**✅ Si necesitas personalizar la ruta, usa esto:**
 ```html
-<a href="{{ .ConfirmationURL }}">Reset Password</a>
+<!-- Solo si ConfirmationURL no funciona -->
+<a href="{{ .SiteURL }}/reset-password#access_token={{ .Token }}&type=recovery">
+  Reset Password
+</a>
 ```
+
+**Nota:** El token DEBE ir en el hash (#) no en query params (?)
 
 #### B) Confirm Signup Template
 
 1. Ve a **Authentication** → **Email Templates**
 2. Selecciona **Confirm Signup**
-3. Verifica que el enlace use:
+3. **IMPORTANTE**: Usa `{{ .ConfirmationURL }}` (recomendado)
 
 ```html
+<a href="{{ .ConfirmationURL }}">Confirm Email</a>
+```
+
+**❌ NO uses esto (causará error):**
+```html
+<!-- NO USAR: Formato incorrecto -->
 <a href="{{ .SiteURL }}/confirm-email?access_token={{ .Token }}&type=signup">
   Confirm Email
 </a>
 ```
 
-O simplemente:
+**✅ Si necesitas personalizar la ruta, usa esto:**
 ```html
-<a href="{{ .ConfirmationURL }}">Confirm Email</a>
+<!-- Solo si ConfirmationURL no funciona -->
+<a href="{{ .SiteURL }}/confirm-email#access_token={{ .Token }}&type=signup">
+  Confirm Email
+</a>
 ```
+
+**Nota:** El token DEBE ir en el hash (#) no en query params (?)
 
 ### 3️⃣ Verificar Site URL
 
