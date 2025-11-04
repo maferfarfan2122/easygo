@@ -24,7 +24,22 @@ const ResetPassword = () => {
   useEffect(() => {
     const checkRecoveryToken = async () => {
       try {
-        // Supabase maneja el hash automáticamente
+        // PRIMERO: Verificar si hay token en el hash (más rápido)
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const accessToken = hashParams.get('access_token');
+        const type = hashParams.get('type');
+        
+        console.log('Hash params:', { accessToken: !!accessToken, type });
+        
+        if (accessToken && type === 'recovery') {
+          // Hay un token de recuperación en la URL
+          console.log('Recovery token found in URL - Valid!');
+          setIsValidToken(true);
+          setCheckingToken(false);
+          return;
+        }
+        
+        // SEGUNDO: Si no hay token en hash, verificar sesión
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -34,27 +49,18 @@ const ResetPassword = () => {
             text: 'Error al verificar el token. Por favor solicita un nuevo enlace.' 
           });
           setIsValidToken(false);
-        } else if (session) {
+        } else if (session?.user) {
           // Hay una sesión válida, el usuario puede cambiar la contraseña
-          setIsValidToken(true);
           console.log('Session found, user can reset password');
+          setIsValidToken(true);
         } else {
-          // No hay sesión, verificar si hay token en el hash
-          const hashParams = new URLSearchParams(window.location.hash.substring(1));
-          const accessToken = hashParams.get('access_token');
-          const type = hashParams.get('type');
-          
-          if (accessToken && type === 'recovery') {
-            // Hay un token de recuperación en la URL
-            setIsValidToken(true);
-            console.log('Recovery token found in URL');
-          } else {
-            setMessage({ 
-              type: 'error', 
-              text: 'No se encontró un token de recuperación válido. Por favor solicita un nuevo enlace desde la página de recuperación de contraseña.' 
-            });
-            setIsValidToken(false);
-          }
+          // No hay token ni sesión válida
+          console.log('No valid token or session found');
+          setMessage({ 
+            type: 'error', 
+            text: 'No se encontró un token de recuperación válido. Por favor solicita un nuevo enlace desde la página de recuperación de contraseña.' 
+          });
+          setIsValidToken(false);
         }
       } catch (error) {
         console.error('Error checking token:', error);

@@ -1,9 +1,6 @@
-# 🔐 Configuración Reset Password en Supabase
+# 🔐 Configuración Autenticación en Supabase
 
-## Problema
-Cuando el usuario hace clic en el enlace del correo de recuperación, no aparece el formulario para ingresar la nueva contraseña.
-
-## Solución
+## Configuración Completa de Email
 
 ### 1️⃣ Configurar Redirect URLs en Supabase Dashboard
 
@@ -14,20 +11,25 @@ Cuando el usuario hace clic en el enlace del correo de recuperación, no aparece
 **Para desarrollo:**
 ```
 http://localhost:5173/reset-password
+http://localhost:5173/confirm-email
 http://localhost:5173/*
 ```
 
 **Para producción (easygo.com.es):**
 ```
 https://easygo.com.es/reset-password
+https://easygo.com.es/confirm-email
 https://easygo.com.es/*
 https://www.easygo.com.es/reset-password
+https://www.easygo.com.es/confirm-email
 https://www.easygo.com.es/*
 ```
 
 4. Guarda los cambios
 
-### 2️⃣ Configurar Email Templates (Opcional)
+### 2️⃣ Configurar Email Templates
+
+#### A) Reset Password Template
 
 1. Ve a **Authentication** → **Email Templates**
 2. Selecciona **Reset Password**
@@ -42,6 +44,23 @@ https://www.easygo.com.es/*
 O simplemente:
 ```html
 <a href="{{ .ConfirmationURL }}">Reset Password</a>
+```
+
+#### B) Confirm Signup Template
+
+1. Ve a **Authentication** → **Email Templates**
+2. Selecciona **Confirm Signup**
+3. Verifica que el enlace use:
+
+```html
+<a href="{{ .SiteURL }}/confirm-email?access_token={{ .Token }}&type=signup">
+  Confirm Email
+</a>
+```
+
+O simplemente:
+```html
+<a href="{{ .ConfirmationURL }}">Confirm Email</a>
 ```
 
 ### 3️⃣ Verificar Site URL
@@ -60,9 +79,39 @@ VITE_SUPABASE_URL=tu_supabase_url
 VITE_SUPABASE_ANON_KEY=tu_anon_key
 ```
 
-## Flujo de Reset Password
+## Flujos de Autenticación
 
-### 1. Usuario solicita reset
+### 📧 Flujo: Email Confirmation (Nuevo Usuario)
+
+1. **Usuario se registra**
+   - Va a `/signin` y crea cuenta
+   - Supabase envía email de confirmación
+
+2. **Usuario hace clic en enlace del email**
+   - URL: `https://easygo.com.es/confirm-email#access_token=xxx&type=signup`
+   - Supabase redirige automáticamente
+
+3. **Aplicación verifica email**
+   - `ConfirmEmail.tsx` detecta token
+   - Verifica sesión con Supabase
+   - Muestra éxito o error
+
+4. **Si verificación exitosa**
+   - Muestra pantalla de éxito
+   - Lista de checks animados
+   - Barra de progreso (3 segundos)
+   - Auto-redirect a `/dashboard`
+
+5. **Si verificación falla**
+   - Muestra instrucciones
+   - Botón "Reenviar Email"
+   - Link para volver a signin
+
+---
+
+### 🔑 Flujo: Reset Password
+
+1. Usuario solicita reset
 - Va a `/forgot-password`
 - Ingresa su email
 - Supabase envía email
@@ -82,7 +131,43 @@ VITE_SUPABASE_ANON_KEY=tu_anon_key
 - Actualiza con `updatePassword()`
 - Redirige a `/dashboard`
 
-## Estados del Componente
+## Estados de los Componentes
+
+### ✅ ConfirmEmail.tsx States
+
+**Loading (Verificando):**
+```tsx
+{verifying && (
+  <Loader2 className="icon-spin" />
+  <h1>Verificando...</h1>
+)}
+```
+
+**Success (Email Verificado):**
+```tsx
+{isVerified && (
+  <CheckCircle className="icon-large" />
+  <h1>¡Email Verificado!</h1>
+  <SuccessChecks />
+  <ProgressBar duration={3s} />
+)}
+```
+
+**Error/Pending (Verificación Pendiente):**
+```tsx
+{!isVerified && (
+  <Mail className="icon-large" />
+  <h1>Verifica tu Email</h1>
+  <Instructions />
+  <button onClick={handleResendEmail}>
+    Reenviar Email
+  </button>
+)}
+```
+
+---
+
+### 🔑 ResetPassword.tsx States
 
 ### ✅ Loading State
 ```tsx
@@ -164,6 +249,34 @@ Si hay sesión, el token es válido.
 **Solución:** Verificar Site URL en Supabase
 
 ## Testing
+
+### 1. Test Email Confirmation (Nuevo)
+
+```bash
+# 1. Registrarse
+https://easygo.com.es/signin
+# Click en "Sign Up"
+
+# 2. Ingresar datos
+email: tu@email.com
+password: ******
+
+# 3. Revisar email de confirmación
+# Buscar: "Confirm your signup"
+
+# 4. Hacer clic en enlace
+# Debería abrir: https://easygo.com.es/confirm-email
+
+# 5. Ver pantalla de éxito
+# ✓ Email confirmado
+# ✓ Cuenta activada
+# ✓ Redirigiendo...
+
+# 6. Auto-redirect a dashboard
+https://easygo.com.es/dashboard
+```
+
+### 2. Test Reset Password
 
 ### 1. Test completo
 ```bash
