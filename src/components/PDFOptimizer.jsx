@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Upload, FileText, Download, TrendingUp, AlertCircle, CheckCircle } from 'lucide-react';
+import { Upload, FileText, Download, TrendingUp, AlertCircle, CheckCircle, Zap, Image as ImageIcon } from 'lucide-react';
 
 const PDFOptimizer = () => {
   const [file, setFile] = useState(null);
@@ -7,7 +7,8 @@ const PDFOptimizer = () => {
   const [analysis, setAnalysis] = useState(null);
   const [optimizedPdfUrl, setOptimizedPdfUrl] = useState(null);
   const [error, setError] = useState(null);
-  const [mode, setMode] = useState('optimize'); // 'optimize' or 'analyze'
+  const [mode, setMode] = useState('analyze'); // 'analyze' or 'optimize'
+  const [optimizationMode, setOptimizationMode] = useState('medium'); // 'light', 'medium', 'aggressive'
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -21,6 +22,24 @@ const PDFOptimizer = () => {
       setError('Please select a valid PDF file');
       setFile(null);
     }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    const droppedFile = e.dataTransfer.files[0];
+    
+    if (droppedFile && droppedFile.type === 'application/pdf') {
+      setFile(droppedFile);
+      setError(null);
+      setAnalysis(null);
+      setOptimizedPdfUrl(null);
+    } else {
+      setError('Please drop a valid PDF file');
+    }
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
   };
 
   const handleAnalyze = async () => {
@@ -72,7 +91,7 @@ const PDFOptimizer = () => {
       formData.append('file', file);
 
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-      const response = await fetch(`${API_URL}/api/tools/pdf-optimizer`, {
+      const response = await fetch(`${API_URL}/api/tools/pdf-optimizer?mode=${optimizationMode}`, {
         method: 'POST',
         body: formData
       });
@@ -81,28 +100,38 @@ const PDFOptimizer = () => {
         throw new Error(`Optimization failed: ${response.statusText}`);
       }
 
-      // Obtener headers con info
+      // Obtener headers con estadísticas
       const processingTime = response.headers.get('X-Processing-Time');
-      const atsScore = response.headers.get('X-Original-ATS-Score');
-      const weakVerbsFixed = response.headers.get('X-Weak-Verbs-Fixed');
-      const actionVerbsAdded = response.headers.get('X-Action-Verbs-Added');
+      const originalSizeMB = response.headers.get('X-Original-Size-MB');
+      const optimizedSizeMB = response.headers.get('X-Optimized-Size-MB');
+      const reductionPercent = response.headers.get('X-Reduction-Percent');
+      const imagesCompressed = response.headers.get('X-Images-Compressed');
+      const pages = response.headers.get('X-Pages');
 
       // Crear URL del PDF optimizado
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       setOptimizedPdfUrl(url);
 
-      // Mostrar info de optimización
+      // Mostrar estadísticas de optimización
       setAnalysis({
         success: true,
-        analysis: {
-          ats_score: parseInt(atsScore) || 0,
-          weak_verbs_found: parseInt(weakVerbsFixed) || 0,
-          missing_action_verbs: parseInt(actionVerbsAdded) || 0
-        },
-        processing_time: processingTime || '2s'
+        optimizationStats: {
+          processingTime,
+          originalSizeMB: parseFloat(originalSizeMB) || 0,
+          optimizedSizeMB: parseFloat(optimizedSizeMB) || 0,
+          reductionPercent: parseFloat(reductionPercent) || 0,
+          imagesCompressed: parseInt(imagesCompressed) || 0,
+          pages: parseInt(pages) || 0,
+          mode: optimizationMode
+        }
       });
 
+      // Auto-descargar el PDF
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `optimized_${optimizationMode}_${file.name}`;
+      link.click();
     } catch (err) {
       setError(err.message || 'Error optimizing PDF');
       console.error('Optimization error:', err);
@@ -111,259 +140,266 @@ const PDFOptimizer = () => {
     }
   };
 
-  const getScoreColor = (score) => {
-    if (score >= 80) return 'text-green-600';
-    if (score >= 60) return 'text-yellow-600';
-    return 'text-red-600';
+  const getModeColor = (modeName) => {
+    switch(modeName) {
+      case 'light': return 'blue';
+      case 'medium': return 'green';
+      case 'aggressive': return 'red';
+      default: return 'gray';
+    }
   };
 
-  const getScoreLabel = (score) => {
-    if (score >= 80) return 'Excellent';
-    if (score >= 60) return 'Good';
-    if (score >= 40) return 'Needs Improvement';
-    return 'Poor';
+  const getModeDescription = (modeName) => {
+    switch(modeName) {
+      case 'light': return '200 DPI • 20-30% reduction • Best quality';
+      case 'medium': return '150 DPI • 40-50% reduction • Balanced';
+      case 'aggressive': return '100 DPI • 60-70% reduction • Max compression';
+      default: return '';
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-12 px-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-block p-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl mb-4">
-            <FileText className="w-8 h-8 text-white" />
-          </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            PDF Optimizer
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+            📄 PDF Optimizer
           </h1>
-          <p className="text-xl text-gray-600">
-            Upload your CV PDF and optimize it with AI-powered rules
+          <p className="text-lg text-gray-600">
+            Compress any PDF • Keep quality • 100% FREE
           </p>
-          <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium">
-            <CheckCircle className="w-4 h-4" />
-            100% Free • No AI Tokens • 2-3 seconds
+          <div className="flex items-center justify-center gap-4 mt-4 text-sm text-gray-500">
+            <span className="flex items-center gap-1">
+              <Zap className="w-4 h-4" /> 2-5 seconds
+            </span>
+            <span className="flex items-center gap-1">
+              <ImageIcon className="w-4 h-4" /> Universal
+            </span>
+            <span className="flex items-center gap-1">
+              <CheckCircle className="w-4 h-4" /> No AI
+            </span>
           </div>
-        </div>
-
-        {/* Mode Selector */}
-        <div className="flex gap-4 mb-8 justify-center">
-          <button
-            onClick={() => setMode('optimize')}
-            className={`px-6 py-3 rounded-lg font-medium transition-all ${
-              mode === 'optimize'
-                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg'
-                : 'bg-white text-gray-700 hover:bg-gray-50'
-            }`}
-          >
-            <TrendingUp className="w-5 h-5 inline mr-2" />
-            Optimize PDF
-          </button>
-          <button
-            onClick={() => setMode('analyze')}
-            className={`px-6 py-3 rounded-lg font-medium transition-all ${
-              mode === 'analyze'
-                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg'
-                : 'bg-white text-gray-700 hover:bg-gray-50'
-            }`}
-          >
-            <AlertCircle className="w-5 h-5 inline mr-2" />
-            Analyze Only
-          </button>
         </div>
 
         {/* Upload Area */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
-          <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-purple-500 transition-colors">
-            <input
-              type="file"
-              accept=".pdf"
-              onChange={handleFileChange}
-              className="hidden"
-              id="pdf-upload"
-            />
-            <label htmlFor="pdf-upload" className="cursor-pointer">
-              <Upload className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-              <p className="text-lg font-medium text-gray-700 mb-2">
-                {file ? file.name : 'Drop your CV PDF here or click to browse'}
+        <div
+          className="border-2 border-dashed border-gray-300 rounded-lg p-8 mb-6 text-center hover:border-blue-500 transition-colors cursor-pointer"
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+          onClick={() => document.getElementById('file-input').click()}
+        >
+          <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          {file ? (
+            <div>
+              <FileText className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+              <p className="text-gray-700 font-medium">{file.name}</p>
+              <p className="text-sm text-gray-500 mt-1">
+                {(file.size / (1024 * 1024)).toFixed(2)} MB
+              </p>
+            </div>
+          ) : (
+            <>
+              <p className="text-gray-700 font-medium mb-2">
+                Drop your PDF here or click to browse
               </p>
               <p className="text-sm text-gray-500">
-                PDF files only • Max 10MB
+                Any type of PDF: invoices, reports, CVs, contracts, etc.
               </p>
-            </label>
-          </div>
-
-          {file && (
-            <div className="mt-6 flex gap-4 justify-center">
-              {mode === 'optimize' ? (
-                <button
-                  onClick={handleOptimize}
-                  disabled={loading}
-                  className="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-medium hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {loading ? (
-                    <>
-                      <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Optimizing...
-                    </>
-                  ) : (
-                    <>
-                      <TrendingUp className="w-5 h-5 inline mr-2" />
-                      Optimize PDF
-                    </>
-                  )}
-                </button>
-              ) : (
-                <button
-                  onClick={handleAnalyze}
-                  disabled={loading}
-                  className="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-medium hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {loading ? (
-                    <>
-                      <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Analyzing...
-                    </>
-                  ) : (
-                    <>
-                      <AlertCircle className="w-5 h-5 inline mr-2" />
-                      Analyze PDF
-                    </>
-                  )}
-                </button>
-              )}
-            </div>
+            </>
           )}
+          <input
+            id="file-input"
+            type="file"
+            accept=".pdf"
+            onChange={handleFileChange}
+            className="hidden"
+          />
         </div>
 
-        {/* Error */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8">
-            <div className="flex items-center gap-2 text-red-800">
-              <AlertCircle className="w-5 h-5" />
-              <span className="font-medium">{error}</span>
+        {/* Mode Toggle */}
+        <div className="flex gap-2 mb-6">
+          <button
+            onClick={() => setMode('analyze')}
+            className={`flex-1 py-3 px-6 rounded-lg font-medium transition-all ${
+              mode === 'analyze'
+                ? 'bg-blue-600 text-white shadow-lg'
+                : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-blue-300'
+            }`}
+          >
+            📊 Analyze Only
+          </button>
+          <button
+            onClick={() => setMode('optimize')}
+            className={`flex-1 py-3 px-6 rounded-lg font-medium transition-all ${
+              mode === 'optimize'
+                ? 'bg-green-600 text-white shadow-lg'
+                : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-green-300'
+            }`}
+          >
+            ⚡ Optimize & Download
+          </button>
+        </div>
+
+        {/* Optimization Mode Selector (only in optimize mode) */}
+        {mode === 'optimize' && (
+          <div className="bg-white rounded-lg p-6 mb-6 border-2 border-gray-100">
+            <h3 className="font-semibold text-gray-900 mb-4">Optimization Mode:</h3>
+            <div className="grid grid-cols-3 gap-3">
+              {['light', 'medium', 'aggressive'].map((modeName) => (
+                <button
+                  key={modeName}
+                  onClick={() => setOptimizationMode(modeName)}
+                  className={`p-4 rounded-lg border-2 transition-all ${
+                    optimizationMode === modeName
+                      ? `border-${getModeColor(modeName)}-500 bg-${getModeColor(modeName)}-50`
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="text-center">
+                    <div className={`text-lg font-bold capitalize mb-1 text-${getModeColor(modeName)}-600`}>
+                      {modeName}
+                    </div>
+                    <div className="text-xs text-gray-600 leading-tight">
+                      {getModeDescription(modeName)}
+                    </div>
+                  </div>
+                </button>
+              ))}
             </div>
+          </div>
+        )}
+
+        {/* Action Button */}
+        <button
+          onClick={mode === 'analyze' ? handleAnalyze : handleOptimize}
+          disabled={!file || loading}
+          className={`w-full py-4 px-6 rounded-lg font-semibold text-white transition-all ${
+            loading
+              ? 'bg-gray-400 cursor-not-allowed'
+              : mode === 'analyze'
+              ? 'bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl'
+              : 'bg-green-600 hover:bg-green-700 shadow-lg hover:shadow-xl'
+          }`}
+        >
+          {loading ? (
+            <span className="flex items-center justify-center gap-2">
+              <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+              Processing...
+            </span>
+          ) : mode === 'analyze' ? (
+            '📊 Analyze PDF'
+          ) : (
+            `⚡ Optimize (${optimizationMode})`
+          )}
+        </button>
+
+        {/* Error Message */}
+        {error && (
+          <div className="mt-6 p-4 bg-red-50 border-2 border-red-200 rounded-lg flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <p className="text-red-800">{error}</p>
           </div>
         )}
 
         {/* Analysis Results */}
-        {analysis && (
-          <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Analysis Results</h2>
+        {analysis && mode === 'analyze' && analysis.analysis && (
+          <div className="mt-6 bg-white rounded-lg p-6 border-2 border-gray-100">
+            <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <TrendingUp className="w-6 h-6 text-blue-600" />
+              PDF Analysis
+            </h3>
             
-            {/* ATS Score */}
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-gray-700 font-medium">ATS Compatibility Score</span>
-                <span className={`text-3xl font-bold ${getScoreColor(analysis.analysis.ats_score)}`}>
-                  {analysis.analysis.ats_score}/100
-                </span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-                <div
-                  className={`h-full transition-all ${
-                    analysis.analysis.ats_score >= 80 ? 'bg-green-500' :
-                    analysis.analysis.ats_score >= 60 ? 'bg-yellow-500' : 'bg-red-500'
-                  }`}
-                  style={{ width: `${analysis.analysis.ats_score}%` }}
-                ></div>
-              </div>
-              <p className="text-sm text-gray-500 mt-1">
-                {getScoreLabel(analysis.analysis.ats_score)}
-              </p>
-            </div>
-
-            {/* Stats */}
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              <div className="bg-yellow-50 rounded-lg p-4">
-                <div className="text-2xl font-bold text-yellow-700 mb-1">
-                  {analysis.analysis.weak_verbs_found}
-                </div>
-                <div className="text-sm text-yellow-600">Weak Verbs Found</div>
-              </div>
+            <div className="grid grid-cols-2 gap-4 mb-4">
               <div className="bg-blue-50 rounded-lg p-4">
-                <div className="text-2xl font-bold text-blue-700 mb-1">
-                  {analysis.analysis.missing_action_verbs}
+                <div className="text-sm text-gray-600">File Size</div>
+                <div className="text-2xl font-bold text-blue-600">
+                  {analysis.analysis.file_size_mb} MB
                 </div>
-                <div className="text-sm text-blue-600">Missing Action Verbs</div>
+              </div>
+              <div className="bg-purple-50 rounded-lg p-4">
+                <div className="text-sm text-gray-600">Pages</div>
+                <div className="text-2xl font-bold text-purple-600">
+                  {analysis.analysis.num_pages}
+                </div>
+              </div>
+              <div className="bg-green-50 rounded-lg p-4">
+                <div className="text-sm text-gray-600">Images</div>
+                <div className="text-2xl font-bold text-green-600">
+                  {analysis.analysis.num_images}
+                </div>
+              </div>
+              <div className="bg-orange-50 rounded-lg p-4">
+                <div className="text-sm text-gray-600">Optimization Potential</div>
+                <div className="text-2xl font-bold text-orange-600 capitalize">
+                  {analysis.analysis.optimization_potential}
+                </div>
               </div>
             </div>
 
-            {/* Suggestions */}
-            {analysis.analysis.optimization_suggestions && (
-              <div className="bg-purple-50 rounded-lg p-4">
-                <h3 className="font-semibold text-purple-900 mb-3">Optimization Suggestions:</h3>
-                <ul className="space-y-2">
-                  {analysis.analysis.optimization_suggestions.map((suggestion, index) => (
-                    <li key={index} className="flex items-start gap-2 text-sm text-purple-700">
-                      <span className="mt-1">•</span>
-                      <span>{suggestion}</span>
-                    </li>
-                  ))}
-                </ul>
+            {analysis.recommendations && (
+              <div className="mt-4 space-y-2">
+                <h4 className="font-semibold text-gray-900">Recommendations:</h4>
+                {Object.entries(analysis.recommendations).map(([mode, rec]) => (
+                  <div key={mode} className="text-sm text-gray-600 bg-gray-50 rounded p-2">
+                    <span className="font-medium capitalize">{mode}:</span> {rec}
+                  </div>
+                ))}
               </div>
             )}
-
-            {/* Processing Time */}
-            <div className="mt-4 text-center text-sm text-gray-500">
-              Processed in {analysis.processing_time}
-            </div>
           </div>
         )}
 
-        {/* Download Optimized PDF */}
-        {optimizedPdfUrl && (
-          <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl shadow-xl p-8 border-2 border-green-200">
-            <div className="text-center">
-              <CheckCircle className="w-16 h-16 mx-auto mb-4 text-green-600" />
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                PDF Optimized Successfully! 🎉
-              </h2>
-              <p className="text-gray-600 mb-6">
-                Your CV has been optimized with action verbs and ATS-friendly formatting
-              </p>
+        {/* Optimization Results */}
+        {analysis && mode === 'optimize' && analysis.optimizationStats && (
+          <div className="mt-6 bg-white rounded-lg p-6 border-2 border-green-100">
+            <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <CheckCircle className="w-6 h-6 text-green-600" />
+              Optimization Complete!
+            </h3>
+            
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="bg-blue-50 rounded-lg p-4">
+                <div className="text-sm text-gray-600">Original Size</div>
+                <div className="text-2xl font-bold text-blue-600">
+                  {analysis.optimizationStats.originalSizeMB} MB
+                </div>
+              </div>
+              <div className="bg-green-50 rounded-lg p-4">
+                <div className="text-sm text-gray-600">Optimized Size</div>
+                <div className="text-2xl font-bold text-green-600">
+                  {analysis.optimizationStats.optimizedSizeMB} MB
+                </div>
+              </div>
+              <div className="bg-purple-50 rounded-lg p-4">
+                <div className="text-sm text-gray-600">Reduction</div>
+                <div className="text-2xl font-bold text-purple-600">
+                  {analysis.optimizationStats.reductionPercent}%
+                </div>
+              </div>
+              <div className="bg-orange-50 rounded-lg p-4">
+                <div className="text-sm text-gray-600">Images Compressed</div>
+                <div className="text-2xl font-bold text-orange-600">
+                  {analysis.optimizationStats.imagesCompressed}
+                </div>
+              </div>
+            </div>
+
+            {optimizedPdfUrl && (
               <a
                 href={optimizedPdfUrl}
-                download={`optimized_${file.name}`}
-                className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg font-medium hover:shadow-lg transition-all"
+                download={`optimized_${optimizationMode}_${file.name}`}
+                className="flex items-center justify-center gap-2 w-full py-3 px-6 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-all shadow-lg hover:shadow-xl"
               >
                 <Download className="w-5 h-5" />
                 Download Optimized PDF
               </a>
-            </div>
+            )}
           </div>
         )}
-
-        {/* Features */}
-        <div className="mt-12 grid md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-xl p-6 shadow-md">
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
-              <TrendingUp className="w-6 h-6 text-purple-600" />
-            </div>
-            <h3 className="font-semibold text-gray-900 mb-2">Smart Optimization</h3>
-            <p className="text-sm text-gray-600">
-              Replaces weak verbs with powerful action verbs automatically
-            </p>
-          </div>
-
-          <div className="bg-white rounded-xl p-6 shadow-md">
-            <div className="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center mb-4">
-              <CheckCircle className="w-6 h-6 text-pink-600" />
-            </div>
-            <h3 className="font-semibold text-gray-900 mb-2">ATS-Friendly</h3>
-            <p className="text-sm text-gray-600">
-              Ensures your CV passes Applicant Tracking Systems
-            </p>
-          </div>
-
-          <div className="bg-white rounded-xl p-6 shadow-md">
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-              <FileText className="w-6 h-6 text-green-600" />
-            </div>
-            <h3 className="font-semibold text-gray-900 mb-2">100% Free</h3>
-            <p className="text-sm text-gray-600">
-              No AI tokens required. Pure Python optimization
-            </p>
-          </div>
-        </div>
       </div>
     </div>
   );

@@ -226,37 +226,23 @@ class PDFOptimizerAdvanced:
     def _extract_image_from_xobject(self, xobject) -> Optional[Image.Image]:
         """Extrae imagen PIL de un XObject de PDF."""
         try:
-            # Intentar extraer como PIL Image
-            if hasattr(xobject, 'as_pil_image'):
-                return xobject.as_pil_image()
-            
-            # Método alternativo
-            width = xobject.Width
-            height = xobject.Height
-            
-            # Obtener datos de la imagen
-            if '/Filter' in xobject:
-                filter_type = xobject.Filter
-                if filter_type == '/DCTDecode':  # JPEG
-                    img_data = xobject.read_bytes()
-                    return Image.open(io.BytesIO(img_data))
-                elif filter_type == '/FlateDecode':  # PNG-like
-                    img_data = xobject.read_bytes()
-                    # Intentar crear imagen desde raw data
-                    color_space = xobject.get('/ColorSpace', '/DeviceRGB')
-                    if color_space == '/DeviceRGB':
-                        mode = 'RGB'
-                    elif color_space == '/DeviceGray':
-                        mode = 'L'
-                    else:
-                        mode = 'RGB'
+            # Usar el método de pikepdf para extraer la imagen
+            try:
+                # Método directo de pikepdf
+                raw_image = pikepdf.PdfImage(xobject)
+                pil_image = raw_image.as_pil_image()
+                return pil_image
+            except Exception as e1:
+                # Método alternativo: leer bytes directamente
+                try:
+                    img_bytes = xobject.read_bytes()
+                    return Image.open(io.BytesIO(img_bytes))
+                except Exception as e2:
+                    print(f"⚠️ Could not extract image: {str(e1)}, {str(e2)}")
+                    return None
                     
-                    return Image.frombytes(mode, (width, height), img_data)
-            
-            return None
-            
         except Exception as e:
-            print(f"⚠️ Image extraction error: {str(e)}")
+            print(f"⚠️ Error extracting image: {str(e)}")
             return None
     
     def _remove_duplicates(self, pdf: pikepdf.Pdf) -> int:
