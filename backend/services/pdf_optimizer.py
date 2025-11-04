@@ -87,9 +87,8 @@ class PDFOptimizerAdvanced:
                 output_buffer,
                 compress_streams=True,
                 stream_decode_level=pikepdf.StreamDecodeLevel.generalized,
-                object_stream_mode=pikepdf.ObjectStreamMode.generate,
-                normalize_content=True,
-                linearize=True  # Optimiza para web
+                object_stream_mode=pikepdf.ObjectStreamMode.generate
+                # No usar normalize_content y linearize juntos (causan conflicto)
             )
             
             # Obtener bytes optimizados
@@ -154,8 +153,20 @@ class PDFOptimizerAdvanced:
                     try:
                         xobject = xobjects[key]
                         
-                        # Verificar si es una imagen
-                        if xobject.get('/Subtype') != '/Image':
+                        # Verificar si es una imagen (múltiples validaciones)
+                        if not hasattr(xobject, 'get'):
+                            continue
+                        
+                        subtype = xobject.get('/Subtype')
+                        if subtype != '/Image':
+                            continue
+                        
+                        # Verificar que tenga propiedades de imagen
+                        if '/Width' not in xobject or '/Height' not in xobject:
+                            continue
+                        
+                        # Verificar que no sea una máscara o forma
+                        if xobject.get('/ImageMask'):
                             continue
                         
                         # Extraer imagen
@@ -226,23 +237,40 @@ class PDFOptimizerAdvanced:
     def _extract_image_from_xobject(self, xobject) -> Optional[Image.Image]:
         """Extrae imagen PIL de un XObject de PDF."""
         try:
-            # Usar el método de pikepdf para extraer la imagen
+            # Método 1: Usar pikepdf.PdfImage (más robusto)
             try:
-                # Método directo de pikepdf
+                # Verificar que realmente sea una imagen válida
+                if not hasattr(xobject, 'get'):
+                    return None
+                
+                # Verificar propiedades básicas de imagen
+                if '/Width' not in xobject or '/Height' not in xobject:
+                    return None
+                
+                # Intentar crear PdfImage
                 raw_image = pikepdf.PdfImage(xobject)
                 pil_image = raw_image.as_pil_image()
                 return pil_image
-            except Exception as e1:
-                # Método alternativo: leer bytes directamente
-                try:
+                
+            except (ValueError, TypeError, AttributeError) as e:
+                # Si falla, el objeto no es una imagen válida para pikepdf
+                if 'non-image' in str(e) or 'PdfImage' in str(e):
+                    return None
+                # Intentar método alternativo
+                pass
+            
+            # Método 2: Leer bytes directamente (para imágenes JPEG embebidas)
+            try:
+                if xobject.get('/Filter') == '/DCTDecode':
                     img_bytes = xobject.read_bytes()
                     return Image.open(io.BytesIO(img_bytes))
-                except Exception as e2:
-                    print(f"⚠️ Could not extract image: {str(e1)}, {str(e2)}")
-                    return None
+            except Exception:
+                pass
+            
+            return None
                     
         except Exception as e:
-            print(f"⚠️ Error extracting image: {str(e)}")
+            # Silenciar errores de imágenes no válidas
             return None
     
     def _remove_duplicates(self, pdf: pikepdf.Pdf) -> int:
