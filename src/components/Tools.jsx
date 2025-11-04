@@ -7,9 +7,8 @@ const Tools = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const handleToolClick = (toolIndex) => {
-    // Index 0 is the CV Builder (first tool)
-    if (toolIndex === 0) {
+  const handleToolClick = (feature) => {
+    if (feature.available) {
       if (user) {
         navigate('/tools/cv-builder');
       } else {
@@ -29,30 +28,52 @@ const Tools = () => {
           {tools.features.map((feature, index) => (
             <article 
               key={index} 
-              className={`tool-card ${index === 0 ? 'tool-card-clickable' : ''}`}
-              onClick={() => index === 0 && handleToolClick(index)}
-              style={index === 0 ? { cursor: 'pointer' } : {}}
+              className={`tool-card ${feature.available ? 'tool-card-available' : 'tool-card-coming-soon'}`}
+              onClick={() => handleToolClick(feature)}
+              style={feature.available ? { cursor: 'pointer' } : { cursor: 'not-allowed', opacity: 0.7 }}
               itemScope
               itemType="https://schema.org/SoftwareApplication"
             >
+              <div className="tool-card-badge">
+                <span className={feature.available ? 'badge-available' : 'badge-coming-soon'}>
+                  {feature.badge}
+                </span>
+              </div>
+              
+              <div className="tool-card-icon">
+                {feature.available ? '🚀' : '⏳'}
+              </div>
+              
               <div className="tool-card-header">
                 {/* SEO: H3 específicos con estructura semántica */}
                 <h3 className="tool-card-title" itemProp="name">
                   {feature.title}
-                  {index === 0 && <span className="tool-badge">Try Now!</span>}
                 </h3>
                 <p className="tool-card-subtitle" itemProp="description">{feature.subtitle}</p>
               </div>
               
               <ul className="tool-card-benefits" role="list" itemProp="featureList">
                 {feature.benefits.map((benefit, benefitIndex) => (
-                  <li key={benefitIndex} role="listitem">{benefit}</li>
+                  <li key={benefitIndex} role="listitem">
+                    <span className="benefit-checkmark">✓</span>
+                    {benefit}
+                  </li>
                 ))}
               </ul>
               
-              <div className="tool-card-image" role="img" aria-label={feature.imageAlt}>
-                {/* Image placeholder */}
-              </div>
+              {feature.available && (
+                <button className="tool-card-cta">
+                  Launch Tool →
+                </button>
+              )}
+              
+              {!feature.available && (
+                <div className="tool-card-notify">
+                  <button className="tool-card-notify-btn">
+                    Notify Me
+                  </button>
+                </div>
+              )}
             </article>
           ))}
         </div>

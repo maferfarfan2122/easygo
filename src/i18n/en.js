@@ -14,129 +14,161 @@ export const texts = {
   },
   
   hero: {
-    title: "Create your Professional CV with Easy Go AI.",
-    subtitle: "Easy Go analyzes job descriptions and optimizes your resume with artificial intelligence. Get hired faster.",
-    primaryCTA: "Create My CV Free",
-    secondaryCTA: "See how it works",
+    title: "Productivity tools designed for you.",
+    subtitle: "Easy Go brings together powerful productivity tools in one beautiful platform. Simple. Intuitive. Powerful.",
+    primaryCTA: "Explore Tools",
+    secondaryCTA: "Learn More",
     benefits: [
-      "Easy Go generates ATS-optimized CVs in 5 minutes",
-      "Easy Go AI personalizes your resume for each job",
-      "Easy Go creates professional PDFs instantly"
+      "Professional-grade tools at your fingertips",
+      "Clean, intuitive interface you'll love using",
+      "More tools coming soon"
     ],
-    description: "Easy Go is the most advanced AI-powered CV generator. Our GPT-4 technology analyzes job descriptions and optimizes your curriculum vitae to pass ATS filters and impress recruiters. Join thousands using Easy Go to land their dream jobs."
+    description: "Easy Go is your productivity hub. Start with our AI-powered CV builder, and stay tuned for more tools designed to make your work life easier."
   },
   
   tools: {
-    heading: "Easy Go: Your AI Career Partner",
-    intro: "Easy Go provides everything you need to create professional, ATS-optimized CVs that get you hired.",
+    heading: "Tools that work as beautifully as they look.",
+    intro: "Easy Go is building a suite of productivity tools. Start with what's available today, and discover more as we grow.",
     features: [
       {
-        title: "Easy Go AI CV Builder",
-        subtitle: "Turn job descriptions into perfect resumes.",
+        title: "CV Builder",
+        subtitle: "Create professional resumes with AI assistance.",
         benefits: [
-          "Easy Go analyzes job postings with GPT-4",
-          "Easy Go AI generates tailored content for each role",
-          "Easy Go ensures ATS compatibility automatically"
+          "AI-powered content optimization",
+          "ATS-friendly templates",
+          "Instant PDF export"
         ],
-        imageAlt: "Easy Go dashboard showing AI CV optimization"
+        imageAlt: "Easy Go CV Builder interface",
+        available: true,
+        badge: "Available Now"
       },
       {
-        title: "Easy Go Smart Content",
-        subtitle: "Let Easy Go write your professional summary.",
+        title: "Portfolio Generator",
+        subtitle: "Showcase your work in minutes.",
         benefits: [
-          "Easy Go creates compelling headlines and achievements",
-          "Easy Go optimizes keywords for ATS systems",
-          "Easy Go maintains your authentic voice"
+          "Beautiful responsive designs",
+          "Drag-and-drop simplicity",
+          "Custom domain support"
         ],
-        imageAlt: "Easy Go AI content generation for CVs"
+        imageAlt: "Easy Go Portfolio Generator",
+        available: false,
+        badge: "Coming Soon"
       },
       {
-        title: "Easy Go Instant Preview",
-        subtitle: "See your CV live as Easy Go creates it.",
+        title: "Email Signature",
+        subtitle: "Professional signatures made simple.",
         benefits: [
-          "Easy Go shows real-time CV updates",
-          "Easy Go previews in professional PDF format",
-          "Easy Go validates ATS compatibility"
+          "Multiple design templates",
+          "Social media integration",
+          "Mobile-responsive"
         ],
-        imageAlt: "Easy Go live CV preview interface"
+        imageAlt: "Easy Go Email Signature tool",
+        available: false,
+        badge: "Coming Soon"
       },
       {
-        title: "Easy Go Export & Share",
-        subtitle: "Download your Easy Go CV instantly.",
+        title: "Link Manager",
+        subtitle: "All your links in one beautiful page.",
         benefits: [
-          "Easy Go generates high-quality PDF downloads",
-          "Easy Go creates ATS-friendly formats",
-          "Easy Go saves your CV versions"
+          "Unlimited links",
+          "Analytics dashboard",
+          "Custom branding"
         ],
-        imageAlt: "Easy Go CV export and download options"
+        imageAlt: "Easy Go Link Manager",
+        available: false,
+        badge: "Coming Soon"
+      },
+      {
+        title: "QR Code Generator",
+        subtitle: "Create custom QR codes instantly.",
+        benefits: [
+          "High-resolution exports",
+          "Custom colors and logos",
+          "Track scans and analytics"
+        ],
+        imageAlt: "Easy Go QR Code Generator",
+        available: false,
+        badge: "Coming Soon"
+      },
+      {
+        title: "Invoice Creator",
+        subtitle: "Professional invoices in seconds.",
+        benefits: [
+          "Customizable templates",
+          "Automatic calculations",
+          "Client management"
+        ],
+        imageAlt: "Easy Go Invoice Creator",
+        available: false,
+        badge: "Coming Soon"
       }
     ]
   },
   
   pricing: {
-    heading: "Easy Go Pricing - Simple and Transparent",
-    intro: "Choose your Easy Go plan. All Easy Go plans include AI CV optimization and ATS compatibility.",
+    heading: "Simple, transparent pricing",
+    intro: "Choose the plan that's right for you. Start with our CV Builder, free forever.",
     plans: [
       {
-        name: "Easy Go Free",
-        tagline: "Start with Easy Go for free.",
+        name: "Free",
+        tagline: "Perfect to get started.",
         price: "$0",
         features: [
-          "1 Easy Go AI-optimized CV",
-          "Basic Easy Go templates",
-          "Easy Go ATS compatibility check",
-          "Easy Go PDF export",
-          "Easy Go community support"
+          "1 AI-optimized CV per month",
+          "Basic templates",
+          "PDF export",
+          "ATS compatibility check",
+          "Community support"
         ],
-        bestFor: "Testing Easy Go or creating your first professional CV.",
-        cta: "Start Easy Go Free"
+        bestFor: "Testing the CV Builder or creating your first professional resume.",
+        cta: "Start Free"
       },
       {
-        name: "Easy Go Pro",
-        tagline: "For professionals who trust Easy Go.",
+        name: "Pro",
+        tagline: "For professionals.",
         price: "$9/month",
         features: [
-          "Unlimited Easy Go AI CVs",
-          "All Easy Go premium templates",
-          "Easy Go job description analyzer",
-          "Easy Go advanced ATS optimization",
-          "Easy Go priority support",
-          "Easy Go cover letter generator"
+          "Unlimited AI CVs",
+          "All premium templates",
+          "Priority support",
+          "Advanced ATS optimization",
+          "Cover letter generator",
+          "Early access to new tools"
         ],
-        bestFor: "Job seekers who rely on Easy Go for multiple applications.",
-        cta: "Get Easy Go Pro",
+        bestFor: "Job seekers and professionals who need multiple CVs.",
+        cta: "Get Pro",
         popular: true
       },
       {
-        name: "Easy Go Business",
-        tagline: "Easy Go for teams and agencies.",
+        name: "Business",
+        tagline: "For teams and agencies.",
         price: "$29/month",
         features: [
-          "Everything in Easy Go Pro",
-          "Easy Go team collaboration (10 users)",
-          "Easy Go bulk CV creation",
-          "Easy Go API access",
-          "Easy Go white-label option",
-          "Easy Go dedicated support"
+          "Everything in Pro",
+          "Team collaboration (10 users)",
+          "Bulk CV creation",
+          "API access",
+          "White-label option",
+          "Dedicated support"
         ],
-        bestFor: "Career coaches and recruitment agencies using Easy Go.",
-        cta: "Contact Easy Go Sales"
+        bestFor: "Career coaches and recruitment agencies.",
+        cta: "Contact Sales"
       }
     ],
     faq: {
-      title: "Easy Go Frequently Asked Questions",
+      title: "Frequently Asked Questions",
       questions: [
         {
-          question: "Can I cancel my Easy Go subscription anytime?",
-          answer: "Yes. Cancel your Easy Go subscription anytime with no fees. Your Easy Go CVs remain accessible until your billing period ends."
+          question: "Can I cancel my subscription anytime?",
+          answer: "Yes. Cancel anytime with no fees. Your CVs remain accessible until your billing period ends."
         },
         {
-          question: "Does Easy Go offer a free trial?",
-          answer: "Easy Go Pro and Business plans include a 7-day money-back guarantee. Try Easy Go risk-free."
+          question: "Is there a free trial?",
+          answer: "Pro and Business plans include a 7-day money-back guarantee. Try risk-free."
         },
         {
-          question: "How does Easy Go billing work?",
-          answer: "Easy Go plans are billed monthly. You can upgrade or cancel your Easy Go subscription from your dashboard."
+          question: "How does billing work?",
+          answer: "Plans are billed monthly. You can upgrade or cancel from your dashboard."
         }
       ]
     }
@@ -192,27 +224,27 @@ export const texts = {
   },
   
   cta: {
-    headline: "Get your website ready today.",
-    supporting: "Start building your dream website with the power of AI. No credit card required.",
+    headline: "Ready to boost your productivity?",
+    supporting: "Start with our CV Builder today, and stay tuned for more powerful tools coming soon.",
     primaryCTA: "Start for free",
-    secondaryCTA: "Talk to sales",
+    secondaryCTA: "Learn more",
     reassurance: [
       "Free to start. Upgrade anytime.",
       "Cancel anytime. No commitments.",
-      "Bank-level security and encryption."
+      "Bank-level security."
     ]
   },
   
   footer: {
-    about: "Easy Go is an AI-powered CV generator that helps professionals create ATS-optimized resumes in minutes. Easy Go uses GPT-4 to analyze job descriptions and tailor your CV for maximum impact.",
+    about: "Easy Go is a productivity platform that brings together powerful tools in one beautiful interface. Start with our AI-powered CV builder, and discover more tools as we grow.",
     links: {
-      about: "About Easy Go",
-      privacy: "Easy Go Privacy",
-      terms: "Easy Go Terms",
-      contact: "Contact Easy Go"
+      about: "About",
+      privacy: "Privacy",
+      terms: "Terms",
+      contact: "Contact"
     },
-    social: "Follow Easy Go on Twitter, LinkedIn, and GitHub.",
+    social: "Follow us on Twitter, LinkedIn, and GitHub.",
     copyright: "© 2025 Easy Go. All rights reserved.",
-    tagline: "Easy Go - Built for job seekers, powered by AI."
+    tagline: "Built with ❤️ for professionals everywhere."
   }
 };
