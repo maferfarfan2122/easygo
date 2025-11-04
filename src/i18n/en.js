@@ -43,6 +43,18 @@ export const texts = {
         badge: "Available Now"
       },
       {
+        title: "PDF Optimizer",
+        subtitle: "Optimize your CV PDF without AI - 100% Free!",
+        benefits: [
+          "Replace weak verbs with action verbs",
+          "ATS score analysis",
+          "No tokens required"
+        ],
+        imageAlt: "Easy Go PDF Optimizer",
+        available: true,
+        badge: "New - Free"
+      },
+      {
         title: "Portfolio Generator",
         subtitle: "Showcase your work in minutes.",
         benefits: [

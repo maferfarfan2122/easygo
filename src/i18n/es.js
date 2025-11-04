@@ -45,6 +45,18 @@ export const texts = {
         badge: "Disponible Ahora"
       },
       {
+        title: "Optimizador de PDF",
+        subtitle: "Optimiza tu CV PDF sin IA - ¡100% Gratis!",
+        benefits: [
+          "Reemplaza verbos débiles con verbos de acción",
+          "Análisis de compatibilidad ATS",
+          "No requiere tokens"
+        ],
+        imageAlt: "Optimizador de PDF de Easy Go",
+        available: true,
+        badge: "Nuevo - Gratis"
+      },
+      {
         title: "Generador de Portfolio",
         subtitle: "Muestra tu trabajo en minutos.",
         benefits: [

@@ -8,10 +8,17 @@ const Tools = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const handleToolClick = (feature) => {
+  const handleToolClick = (feature, index) => {
     if (feature.available) {
       if (user) {
-        navigate('/tools/cv-builder');
+        // Primera herramienta: CV Builder
+        if (index === 0) {
+          navigate('/tools/cv-builder');
+        }
+        // Segunda herramienta: PDF Optimizer
+        else if (index === 1) {
+          navigate('/tools/pdf-optimizer');
+        }
       } else {
         navigate('/signin');
       }
@@ -30,7 +37,7 @@ const Tools = () => {
             <article 
               key={index} 
               className={`tool-card ${feature.available ? 'tool-card-available' : 'tool-card-coming-soon'}`}
-              onClick={() => handleToolClick(feature)}
+              onClick={() => handleToolClick(feature, index)}
               style={feature.available ? { cursor: 'pointer' } : { cursor: 'not-allowed', opacity: 0.7 }}
               itemScope
               itemType="https://schema.org/SoftwareApplication"

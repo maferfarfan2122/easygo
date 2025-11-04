@@ -7,6 +7,7 @@ import Home from './components/Home'
 import SignIn from './components/SignIn'
 import Dashboard from './components/Dashboard'
 import CVBuilder from './components/CVBuilder'
+import PDFOptimizer from './components/PDFOptimizer'
 import ProtectedRoute from './components/ProtectedRoute'
 
 function App() {
@@ -31,6 +32,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <CVBuilder />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/tools/pdf-optimizer" 
+              element={
+                <ProtectedRoute>
+                  <PDFOptimizer />
                 </ProtectedRoute>
               } 
             />

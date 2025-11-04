@@ -13,14 +13,12 @@ from services.openai_service_optimized import (
 )
 from services.cv_optimizer_native import native_optimizer
 from services.pdf_generator import generate_cv_pdf, save_pdf_file
+from services.pdf_optimizer import pdf_optimizer
 from services.token_service import token_manager
 import os
 import time
 import asyncio
 import re
-from dotenv import load_dotenv
-from typing import Optional, Dict
-import asyncio
 from dotenv import load_dotenv
 from typing import Optional, Dict, List
 
@@ -1081,6 +1079,179 @@ async def ats_check_tool(cv_data: Dict):
     except Exception as e:
         print(f"❌ Error en ATS check: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
+# PDF OPTIMIZER TOOL - 100% Native Python (No AI)
+# ============================================================================
+
+@app.post("/api/tools/pdf-optimizer", tags=["Tools"])
+async def optimize_pdf_file(
+    file: UploadFile = File(..., description="PDF file to optimize")
+):
+    """
+    🚀 PDF OPTIMIZER - Optimiza PDFs de CV sin usar IA (100% GRATIS)
+    
+    Proceso:
+    1. Extrae texto del PDF subido
+    2. Analiza estructura (experiencia, skills, educación)
+    3. Optimiza contenido con reglas nativas:
+       - Reemplaza verbos débiles con action verbs
+       - Mejora formato de bullets
+       - Optimiza para ATS
+    4. Genera nuevo PDF optimizado
+    
+    Input: PDF file (multipart/form-data)
+    Output: Optimized PDF + Analysis
+    
+    Velocidad: ~2-3 segundos
+    Costo: GRATIS (0 tokens)
+    """
+    start_time = time.time()
+    
+    try:
+        # Validar que sea PDF
+        if not file.filename.endswith('.pdf'):
+            raise HTTPException(
+                status_code=400,
+                detail="Only PDF files are accepted"
+            )
+        
+        print(f"📄 Processing PDF: {file.filename}")
+        
+        # Leer archivo
+        pdf_content = await file.read()
+        pdf_file = io.BytesIO(pdf_content)
+        
+        # 1. Extraer texto del PDF
+        print("🔍 Extracting text from PDF...")
+        text = pdf_optimizer.extract_text_from_pdf(pdf_file)
+        
+        if not text or len(text) < 50:
+            raise HTTPException(
+                status_code=400,
+                detail="Could not extract text from PDF. Make sure the PDF is not image-based."
+            )
+        
+        # 2. Parsear estructura del CV
+        print("📋 Parsing CV structure...")
+        cv_data = pdf_optimizer.parse_cv_structure(text)
+        
+        # 3. Analizar PDF original
+        print("📊 Analyzing original PDF...")
+        analysis = pdf_optimizer.analyze_pdf(cv_data)
+        
+        # 4. Optimizar contenido
+        print("⚡ Optimizing content...")
+        optimized_cv_data = pdf_optimizer.optimize_content(cv_data)
+        
+        # 5. Generar PDF optimizado
+        print("📝 Generating optimized PDF...")
+        optimized_pdf_buffer = pdf_optimizer.generate_optimized_pdf(optimized_cv_data)
+        
+        elapsed = time.time() - start_time
+        print(f"✅ PDF optimized in {elapsed:.2f}s")
+        
+        # Retornar PDF optimizado
+        return StreamingResponse(
+            optimized_pdf_buffer,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f"attachment; filename=optimized_{file.filename}",
+                "X-Processing-Time": f"{elapsed:.2f}s",
+                "X-Original-ATS-Score": str(analysis['ats_score']),
+                "X-Weak-Verbs-Fixed": str(analysis['weak_verbs_found']),
+                "X-Action-Verbs-Added": str(analysis['missing_action_verbs'])
+            }
+        )
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Error optimizing PDF: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/tools/pdf-analyzer", tags=["Tools"])
+async def analyze_pdf_file(
+    file: UploadFile = File(..., description="PDF file to analyze")
+):
+    """
+    📊 PDF ANALYZER - Analiza PDFs de CV sin descargar (100% GRATIS)
+    
+    Analiza el PDF y retorna:
+    - ATS score
+    - Verbos débiles detectados
+    - Missing action verbs
+    - Sugerencias de mejora
+    
+    Input: PDF file (multipart/form-data)
+    Output: JSON con análisis detallado
+    
+    Velocidad: ~1 segundo
+    Costo: GRATIS (0 tokens)
+    """
+    start_time = time.time()
+    
+    try:
+        # Validar que sea PDF
+        if not file.filename.endswith('.pdf'):
+            raise HTTPException(
+                status_code=400,
+                detail="Only PDF files are accepted"
+            )
+        
+        print(f"📄 Analyzing PDF: {file.filename}")
+        
+        # Leer archivo
+        pdf_content = await file.read()
+        pdf_file = io.BytesIO(pdf_content)
+        
+        # Extraer texto
+        text = pdf_optimizer.extract_text_from_pdf(pdf_file)
+        
+        if not text or len(text) < 50:
+            raise HTTPException(
+                status_code=400,
+                detail="Could not extract text from PDF"
+            )
+        
+        # Parsear estructura
+        cv_data = pdf_optimizer.parse_cv_structure(text)
+        
+        # Analizar
+        analysis = pdf_optimizer.analyze_pdf(cv_data)
+        
+        elapsed = time.time() - start_time
+        print(f"✅ PDF analyzed in {elapsed:.2f}s")
+        
+        return {
+            "success": True,
+            "filename": file.filename,
+            "analysis": analysis,
+            "cv_structure": {
+                "has_name": bool(cv_data['name']),
+                "has_contact": len(cv_data['contact']) > 0,
+                "has_summary": bool(cv_data['summary']),
+                "experience_count": len(cv_data['experience']),
+                "skills_count": len(cv_data['skills']),
+                "education_count": len(cv_data['education'])
+            },
+            "processing_time": f"{elapsed:.2f}s",
+            "cost": "FREE - No tokens used"
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Error analyzing PDF: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Importar io al inicio si no está
+import io
 
 
 # Manejo de errores global
