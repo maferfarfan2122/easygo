@@ -64,63 +64,68 @@ class PDFOptimizer:
     def _create_custom_styles(self):
         """Crea estilos personalizados para el PDF"""
         # Estilo para nombre
-        self.styles.add(ParagraphStyle(
-            name='Name',
-            parent=self.styles['Heading1'],
-            fontSize=24,
-            textColor=HexColor('#2C3E50'),
-            spaceAfter=6,
-            alignment=TA_CENTER,
-            fontName='Helvetica-Bold'
-        ))
+        if 'Name' not in self.styles:
+            self.styles.add(ParagraphStyle(
+                name='Name',
+                parent=self.styles['Heading1'],
+                fontSize=24,
+                textColor=HexColor('#2C3E50'),
+                spaceAfter=6,
+                alignment=TA_CENTER,
+                fontName='Helvetica-Bold'
+            ))
         
         # Estilo para información de contacto
-        self.styles.add(ParagraphStyle(
-            name='Contact',
-            parent=self.styles['Normal'],
-            fontSize=10,
-            textColor=HexColor('#34495E'),
-            alignment=TA_CENTER,
-            spaceAfter=12
-        ))
+        if 'Contact' not in self.styles:
+            self.styles.add(ParagraphStyle(
+                name='Contact',
+                parent=self.styles['Normal'],
+                fontSize=10,
+                textColor=HexColor('#34495E'),
+                alignment=TA_CENTER,
+                spaceAfter=12
+            ))
         
         # Estilo para títulos de sección
-        self.styles.add(ParagraphStyle(
-            name='SectionTitle',
-            parent=self.styles['Heading2'],
-            fontSize=14,
-            textColor=HexColor('#2980B9'),
-            spaceAfter=8,
-            spaceBefore=12,
-            fontName='Helvetica-Bold',
-            borderWidth=0,
-            borderColor=HexColor('#2980B9'),
-            borderPadding=0,
-            leftIndent=0
-        ))
+        if 'SectionTitle' not in self.styles:
+            self.styles.add(ParagraphStyle(
+                name='SectionTitle',
+                parent=self.styles['Heading2'],
+                fontSize=14,
+                textColor=HexColor('#2980B9'),
+                spaceAfter=8,
+                spaceBefore=12,
+                fontName='Helvetica-Bold',
+                borderWidth=0,
+                borderColor=HexColor('#2980B9'),
+                borderPadding=0,
+                leftIndent=0
+            ))
         
         # Estilo para contenido
-        self.styles.add(ParagraphStyle(
-            name='Content',
-            parent=self.styles['Normal'],
-            fontSize=10,
-            textColor=HexColor('#2C3E50'),
-            spaceAfter=6,
-            leading=14,
-            leftIndent=0
-        ))
+        if 'Content' not in self.styles:
+            self.styles.add(ParagraphStyle(
+                name='Content',
+                parent=self.styles['Normal'],
+                fontSize=10,
+                textColor=HexColor('#2C3E50'),
+                spaceAfter=6,
+                leading=14,
+                leftIndent=0
+            ))
         
-        # Estilo para bullets
-        self.styles.add(ParagraphStyle(
-            name='Bullet',
-            parent=self.styles['Normal'],
-            fontSize=10,
-            textColor=HexColor('#2C3E50'),
-            spaceAfter=4,
-            leading=13,
-            leftIndent=20,
-            bulletIndent=10
-        ))
+        # Estilo para bullets (usar nombre único)
+        if 'CVBullet' not in self.styles:
+            self.styles.add(ParagraphStyle(
+                name='CVBullet',
+                parent=self.styles['Normal'],
+                fontSize=10,
+                textColor=HexColor('#2C3E50'),
+                spaceAfter=4,
+                leading=13,
+                leftIndent=20,
+                bulletIndent=10
+            ))
     
     def extract_text_from_pdf(self, pdf_file) -> str:
         """Extrae texto de un PDF"""
@@ -355,7 +360,7 @@ class PDFOptimizer:
                 # Bullets
                 for bullet in exp['bullets']:
                     bullet_text = f"• {bullet}"
-                    story.append(Paragraph(bullet_text, self.styles['Bullet']))
+                    story.append(Paragraph(bullet_text, self.styles['CVBullet']))
                 story.append(Spacer(1, 0.1*inch))
         
         # Skills
