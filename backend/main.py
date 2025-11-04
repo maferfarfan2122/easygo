@@ -11,7 +11,13 @@ from services.openai_service_optimized import (
     clear_cache,
     get_cache_stats
 )
-from services.cv_optimizer_native import native_optimizer
+from services.cv_optimizer_native import (
+    native_optimizer,
+    generate_suggestions_native,
+    analyze_ats_compatibility,
+    calculate_match_score,
+    match_skills
+)
 from services.pdf_generator import generate_cv_pdf, save_pdf_file
 from services.pdf_optimizer import pdf_optimizer
 from services.token_service import token_manager
