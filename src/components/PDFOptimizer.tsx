@@ -207,15 +207,6 @@ const PDFOptimizer = () => {
     }
   };
 
-  const getModeColor = (modeName: OptimizationModeType): string => {
-    switch(modeName) {
-      case 'light': return 'blue';
-      case 'medium': return 'green';
-      case 'aggressive': return 'red';
-      default: return 'gray';
-    }
-  };
-
   const getModeIcon = (modeName: OptimizationModeType): React.ReactNode => {
     switch(modeName) {
       case 'light': return <Gauge className="w-5 h-5" />;
@@ -268,10 +259,10 @@ const PDFOptimizer = () => {
         <div
           className={`relative border-3 border-dashed rounded-2xl p-12 mb-8 text-center transition-all duration-300 cursor-pointer ${
             dragActive 
-              ? 'border-purple-500 bg-purple-50 scale-105 shadow-2xl' 
+              ? 'border-purple-500 bg-purple-50 scale-105 shadow-2xl animate-pulse-border' 
               : file 
-              ? 'border-green-400 bg-green-50 shadow-lg'
-              : 'border-gray-300 bg-white hover:border-purple-400 hover:shadow-xl hover:scale-102'
+              ? 'border-green-400 bg-green-50 shadow-xl'
+              : 'border-gray-300 bg-white hover:border-purple-400 hover:shadow-xl hover:scale-102 hover:bg-purple-50/30'
           }`}
           onDrop={handleDrop}
           onDragOver={handleDragOver}
@@ -300,7 +291,7 @@ const PDFOptimizer = () => {
             </div>
           ) : (
             <div className="animate-fade-in">
-              <Upload className={`w-16 h-16 mx-auto mb-4 transition-transform ${dragActive ? 'scale-110 text-purple-600' : 'text-gray-400'}`} />
+              <Upload className={`w-16 h-16 mx-auto mb-4 transition-all duration-500 ${dragActive ? 'scale-125 text-purple-600 animate-bounce' : 'text-gray-400'}`} />
               <p className="text-2xl font-semibold text-gray-700 mb-2">
                 {dragActive ? '¡Suelta aquí!' : 'Arrastra tu PDF aquí'}
               </p>
@@ -359,44 +350,49 @@ const PDFOptimizer = () => {
               Modo de Optimización:
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {(['light', 'medium', 'aggressive'] as const).map((modeName) => (
-                <button
-                  key={modeName}
-                  onClick={() => setOptimizationMode(modeName)}
-                  className={`group relative p-6 rounded-xl border-3 transition-all duration-300 ${
-                    optimizationMode === modeName
-                      ? `border-${getModeColor(modeName)}-500 bg-gradient-to-br from-${getModeColor(modeName)}-50 to-${getModeColor(modeName)}-100 shadow-xl scale-105`
-                      : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-lg hover:scale-102'
-                  }`}
-                >
-                  {optimizationMode === modeName && (
-                    <div className="absolute -top-3 -right-3 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center shadow-lg animate-bounce">
-                      <CheckCircle className="w-5 h-5 text-white" />
+              {(['light', 'medium', 'aggressive'] as const).map((modeName) => {
+                const isSelected = optimizationMode === modeName;
+                const colorClass = modeName === 'light' ? 'mode-light' : modeName === 'medium' ? 'mode-medium' : 'mode-aggressive';
+                
+                return (
+                  <button
+                    key={modeName}
+                    onClick={() => setOptimizationMode(modeName)}
+                    className={`group relative p-6 rounded-xl border-2 transition-all duration-300 transform ${
+                      isSelected
+                        ? `${colorClass}-selected shadow-xl scale-105`
+                        : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-lg hover:scale-102'
+                    }`}
+                  >
+                    {isSelected && (
+                      <div className="absolute -top-3 -right-3 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center shadow-lg animate-bounce">
+                        <CheckCircle className="w-5 h-5 text-white" />
+                      </div>
+                    )}
+                    <div className="flex items-center justify-center mb-3">
+                      <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
+                        isSelected 
+                          ? `${colorClass}-icon` 
+                          : 'bg-gray-100 text-gray-400 group-hover:bg-gray-200'
+                      }`}>
+                        {getModeIcon(modeName)}
+                      </div>
                     </div>
-                  )}
-                  <div className="flex items-center justify-center mb-3">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                      optimizationMode === modeName 
-                        ? `bg-${getModeColor(modeName)}-500 text-white` 
-                        : 'bg-gray-100 text-gray-400 group-hover:bg-gray-200'
-                    }`}>
-                      {getModeIcon(modeName)}
+                    <div className="text-center">
+                      <div className={`text-xl font-bold capitalize mb-2 transition-colors ${
+                        isSelected 
+                          ? `${colorClass}-text` 
+                          : 'text-gray-700'
+                      }`}>
+                        {modeName === 'light' ? 'Ligero' : modeName === 'medium' ? 'Medio' : 'Agresivo'}
+                      </div>
+                      <div className="text-sm text-gray-600 leading-tight">
+                        {getModeDescription(modeName)}
+                      </div>
                     </div>
-                  </div>
-                  <div className="text-center">
-                    <div className={`text-xl font-bold capitalize mb-2 ${
-                      optimizationMode === modeName 
-                        ? `text-${getModeColor(modeName)}-700` 
-                        : 'text-gray-700'
-                    }`}>
-                      {modeName === 'light' ? 'Ligero' : modeName === 'medium' ? 'Medio' : 'Agresivo'}
-                    </div>
-                    <div className="text-sm text-gray-600 leading-tight">
-                      {getModeDescription(modeName)}
-                    </div>
-                  </div>
-                </button>
-              ))}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
@@ -404,19 +400,32 @@ const PDFOptimizer = () => {
         {/* Progress Bar */}
         {loading && (
           <div className="mb-8 animate-fade-in">
-            <div className="bg-white rounded-xl p-6 shadow-lg border-2 border-gray-100">
+            <div className="bg-white rounded-xl p-6 shadow-xl border-2 border-purple-100">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-lg font-semibold text-gray-700">
+                <span className="text-lg font-semibold text-gray-700 flex items-center gap-2">
+                  <div className="w-2 h-2 bg-purple-600 rounded-full animate-ping"></div>
                   {mode === 'analyze' ? 'Analizando...' : 'Optimizando...'}
                 </span>
                 <span className="text-lg font-bold text-purple-600">{progress}%</span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+              <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden shadow-inner">
                 <div 
-                  className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-300 ease-out"
-                  style={{ width: `${progress}%` }}
-                />
+                  className="h-full rounded-full transition-all duration-300 ease-out relative overflow-hidden"
+                  style={{ 
+                    width: `${progress}%`,
+                    background: 'linear-gradient(90deg, #a855f7 0%, #ec4899 50%, #a855f7 100%)',
+                    backgroundSize: '200% 100%'
+                  }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer"></div>
+                </div>
               </div>
+              <p className="text-xs text-gray-500 mt-2 text-center">
+                {progress < 30 ? 'Iniciando procesamiento...' : 
+                 progress < 70 ? 'Procesando páginas...' : 
+                 progress < 95 ? 'Casi listo...' : 
+                 '¡Finalizando!'}
+              </p>
             </div>
           </div>
         )}
@@ -496,25 +505,25 @@ const PDFOptimizer = () => {
             </h3>
             
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-5 border-2 border-blue-200">
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-5 border-2 border-blue-200 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer">
                 <div className="text-sm text-blue-700 font-medium mb-1">Tamaño</div>
                 <div className="text-3xl font-bold text-blue-600">
                   {analysis.analysis.file_size_mb} MB
                 </div>
               </div>
-              <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-5 border-2 border-purple-200">
+              <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-5 border-2 border-purple-200 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer">
                 <div className="text-sm text-purple-700 font-medium mb-1">Páginas</div>
                 <div className="text-3xl font-bold text-purple-600">
                   {analysis.analysis.num_pages}
                 </div>
               </div>
-              <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-5 border-2 border-green-200">
+              <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-5 border-2 border-green-200 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer">
                 <div className="text-sm text-green-700 font-medium mb-1">Imágenes</div>
                 <div className="text-3xl font-bold text-green-600">
                   {analysis.analysis.num_images}
                 </div>
               </div>
-              <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-5 border-2 border-orange-200">
+              <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-5 border-2 border-orange-200 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer">
                 <div className="text-sm text-orange-700 font-medium mb-1">Potencial</div>
                 <div className="text-3xl font-bold text-orange-600 capitalize">
                   {analysis.analysis.optimization_potential === 'high' ? 'Alto' : 
@@ -558,25 +567,25 @@ const PDFOptimizer = () => {
             </div>
             
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-5 border-2 border-blue-200">
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-5 border-2 border-blue-200 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer">
                 <div className="text-sm text-blue-700 font-medium mb-1">Original</div>
                 <div className="text-3xl font-bold text-blue-600">
                   {analysis.optimizationStats.originalSizeMB} MB
                 </div>
               </div>
-              <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-5 border-2 border-green-200">
+              <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-5 border-2 border-green-200 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer">
                 <div className="text-sm text-green-700 font-medium mb-1">Optimizado</div>
                 <div className="text-3xl font-bold text-green-600">
                   {analysis.optimizationStats.optimizedSizeMB} MB
                 </div>
               </div>
-              <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-5 border-2 border-purple-200">
+              <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-5 border-2 border-purple-200 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer">
                 <div className="text-sm text-purple-700 font-medium mb-1">Reducción</div>
                 <div className="text-3xl font-bold text-purple-600">
                   {analysis.optimizationStats.reductionPercent}%
                 </div>
               </div>
-              <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-5 border-2 border-orange-200">
+              <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-5 border-2 border-orange-200 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer">
                 <div className="text-sm text-orange-700 font-medium mb-1">Páginas</div>
                 <div className="text-3xl font-bold text-orange-600">
                   {analysis.optimizationStats.pages}
@@ -599,15 +608,22 @@ const PDFOptimizer = () => {
       </div>
 
       <style>{`
+        /* Animaciones suaves */
         @keyframes fade-in {
-          from { opacity: 0; }
-          to { opacity: 1; }
+          from { 
+            opacity: 0; 
+            transform: translateY(-10px);
+          }
+          to { 
+            opacity: 1; 
+            transform: translateY(0);
+          }
         }
         
         @keyframes slide-up {
           from { 
             opacity: 0;
-            transform: translateY(20px);
+            transform: translateY(30px);
           }
           to { 
             opacity: 1;
@@ -618,7 +634,7 @@ const PDFOptimizer = () => {
         @keyframes slide-down {
           from { 
             opacity: 0;
-            transform: translateY(-20px);
+            transform: translateY(-30px);
           }
           to { 
             opacity: 1;
@@ -628,24 +644,199 @@ const PDFOptimizer = () => {
         
         @keyframes shake {
           0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-10px); }
-          75% { transform: translateX(10px); }
+          10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+          20%, 40%, 60%, 80% { transform: translateX(10px); }
+        }
+        
+        @keyframes pulse-border {
+          0%, 100% { 
+            border-color: rgb(168, 85, 247);
+            box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.4);
+          }
+          50% { 
+            border-color: rgb(236, 72, 153);
+            box-shadow: 0 0 0 10px rgba(236, 72, 153, 0);
+          }
         }
         
         .animate-fade-in {
-          animation: fade-in 0.3s ease-out;
+          animation: fade-in 0.5s ease-out;
         }
         
         .animate-slide-up {
-          animation: slide-up 0.4s ease-out;
+          animation: slide-up 0.5s ease-out;
         }
         
         .animate-slide-down {
-          animation: slide-down 0.4s ease-out;
+          animation: slide-down 0.5s ease-out;
         }
         
         .animate-shake {
-          animation: shake 0.5s ease-out;
+          animation: shake 0.6s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        
+        /* Mejoras de hover y scale */
+        .hover\\:scale-102:hover {
+          transform: scale(1.02);
+        }
+        
+        .scale-105 {
+          transform: scale(1.05);
+        }
+        
+        /* Estilos para modos de optimización - Light */
+        .mode-light-selected {
+          background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+          border-color: #3b82f6;
+        }
+        
+        .mode-light-icon {
+          background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+          color: white;
+        }
+        
+        .mode-light-text {
+          color: #1e40af;
+        }
+        
+        /* Estilos para modos de optimización - Medium */
+        .mode-medium-selected {
+          background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+          border-color: #10b981;
+        }
+        
+        .mode-medium-icon {
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+          color: white;
+        }
+        
+        .mode-medium-text {
+          color: #047857;
+        }
+        
+        /* Estilos para modos de optimización - Aggressive */
+        .mode-aggressive-selected {
+          background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+          border-color: #ef4444;
+        }
+        
+        .mode-aggressive-icon {
+          background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+          color: white;
+        }
+        
+        .mode-aggressive-text {
+          color: #b91c1c;
+        }
+        
+        /* Efecto de brillo en cards */
+        .shadow-xl {
+          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 
+                      0 10px 10px -5px rgba(0, 0, 0, 0.04),
+                      0 0 0 1px rgba(0, 0, 0, 0.05);
+        }
+        
+        .shadow-2xl {
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25),
+                      0 0 0 1px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Mejoras de borde para drag & drop */
+        .border-3 {
+          border-width: 3px;
+        }
+        
+        /* Animación de progreso */
+        .bg-gradient-to-r {
+          background-size: 200% 100%;
+          animation: gradient-shift 2s ease infinite;
+        }
+        
+        @keyframes gradient-shift {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        
+        @keyframes shimmer {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+        
+        .animate-shimmer {
+          animation: shimmer 2s infinite;
+        }
+        
+        /* Mejoras de transición global */
+        * {
+          transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* Efectos de hover mejorados */
+        button:not(:disabled):hover {
+          transform: translateY(-2px);
+        }
+        
+        button:not(:disabled):active {
+          transform: translateY(0);
+        }
+        
+        /* Mejorar apariencia de badges */
+        .rounded-full {
+          backdrop-filter: blur(10px);
+        }
+        
+        /* Gradiente de texto más vibrante */
+        .bg-clip-text {
+          -webkit-background-clip: text;
+          background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+        
+        /* Efecto de glow en success */
+        @keyframes glow {
+          0%, 100% {
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+          }
+          50% {
+            box-shadow: 0 0 40px rgba(16, 185, 129, 0.8);
+          }
+        }
+        
+        .animate-bounce {
+          animation: bounce 1s infinite, glow 2s ease-in-out infinite;
+        }
+        
+        /* Responsive improvements */
+        @media (max-width: 768px) {
+          .text-5xl {
+            font-size: 2.5rem;
+          }
+          
+          .text-3xl {
+            font-size: 1.875rem;
+          }
+          
+          .gap-6 {
+            gap: 1rem;
+          }
+          
+          .px-4 {
+            padding-left: 1rem;
+            padding-right: 1rem;
+          }
+        }
+        
+        /* Mejora de accesibilidad y focus */
+        button:focus-visible,
+        input:focus-visible {
+          outline: 3px solid #a855f7;
+          outline-offset: 2px;
+        }
+        
+        /* Smooth scroll para animaciones */
+        html {
+          scroll-behavior: smooth;
         }
       `}</style>
     </div>
