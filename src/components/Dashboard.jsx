@@ -2,6 +2,7 @@
 import { useAuth } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { SEOHead } from './SEOHead'
+import InstallPWA from './InstallPWA'
 
 const Dashboard = () => {
   const { user, signOut } = useAuth()
@@ -59,6 +60,7 @@ const Dashboard = () => {
           </div>
 
           <div className="dashboard-actions">
+            <InstallPWA />
             <button className="btn btn-primary" onClick={() => navigate('/tools/cv-builder')}>
               🎯 Create AI CV
             </button>
