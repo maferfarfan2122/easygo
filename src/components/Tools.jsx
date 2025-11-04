@@ -1,8 +1,9 @@
-import { texts } from '../i18n/en';
+import { useLanguage } from '../context/LanguageContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const Tools = () => {
+  const { texts } = useLanguage();
   const { tools } = texts;
   const { user } = useAuth();
   const navigate = useNavigate();

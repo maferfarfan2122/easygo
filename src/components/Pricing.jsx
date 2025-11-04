@@ -1,7 +1,8 @@
-import { texts } from '../i18n/en';
+import { useLanguage } from '../context/LanguageContext';
 import { useNavigate } from 'react-router-dom';
 
 const Pricing = () => {
+  const { texts } = useLanguage();
   const { pricing } = texts;
   const navigate = useNavigate();
 

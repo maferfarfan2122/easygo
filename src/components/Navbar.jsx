@@ -1,8 +1,9 @@
-import { texts } from '../i18n/en';
+import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
+  const { texts, language, toggleLanguage } = useLanguage();
   const { navbar } = texts;
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
@@ -42,16 +43,16 @@ const Navbar = () => {
             <>
               <li>
                 <Link to="/dashboard" className="navbar-link">
-                  Dashboard
+                  {navbar.dashboard}
                 </Link>
               </li>
               <li>
                 <button 
                   onClick={handleSignOut} 
                   className="navbar-signout"
-                  aria-label="Sign out"
+                  aria-label={navbar.signOut}
                 >
-                  Sign Out
+                  {navbar.signOut}
                 </button>
               </li>
             </>
@@ -62,6 +63,18 @@ const Navbar = () => {
               </Link>
             </li>
           )}
+          
+          {/* Language Switcher */}
+          <li>
+            <button 
+              onClick={toggleLanguage}
+              className="language-switcher"
+              aria-label={language === 'en' ? 'Cambiar a español' : 'Switch to English'}
+            >
+              <span className="language-icon">🌐</span>
+              <span className="language-text">{language === 'en' ? 'ES' : 'EN'}</span>
+            </button>
+          </li>
         </ul>
       </div>
     </nav>

@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { texts } from '../i18n/en';
 
 const CVBuilder = () => {
   const navigate = useNavigate();

@@ -1,6 +1,7 @@
-import { texts } from '../i18n/en';
+import { useLanguage } from '../context/LanguageContext';
 
 const CTA = () => {
+  const { texts } = useLanguage();
   const { cta } = texts;
 
   return (

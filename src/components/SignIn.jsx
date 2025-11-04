@@ -1,10 +1,11 @@
-import { texts } from '../i18n/en';
+import { useLanguage } from '../context/LanguageContext';
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { SEOHead } from './SEOHead';
 
 const SignIn = () => {
+  const { texts } = useLanguage();
   const { signIn: signInTexts } = texts;
   const { signIn, signUp, resetPassword, loading } = useAuth();
   const navigate = useNavigate();
