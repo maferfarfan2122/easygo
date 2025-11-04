@@ -1,6 +1,7 @@
 // Página del Dashboard - Solo accesible para usuarios autenticados
 import { useAuth } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
+import { SEOHead } from './SEOHead'
 
 const Dashboard = () => {
   const { user, signOut } = useAuth()
@@ -12,10 +13,17 @@ const Dashboard = () => {
   }
 
   return (
-    <section className="dashboard">
-      <div className="dashboard-container">
-        <div className="dashboard-content">
-          <h1 className="dashboard-heading">Welcome to Easy Go Dashboard</h1>
+    <>
+      <SEOHead 
+        title="Dashboard"
+        description="Panel de control de Easy Go. Gestiona tus CVs profesionales y proyectos con IA."
+        url="https://easygo.com.es/dashboard"
+      />
+      
+      <section className="dashboard">
+        <div className="dashboard-container">
+          <div className="dashboard-content">
+            <h1 className="dashboard-heading">Welcome to Easy Go Dashboard</h1>
           
           <div className="dashboard-user-info">
             <div className="user-avatar">
@@ -77,6 +85,7 @@ const Dashboard = () => {
         </div>
       </div>
     </section>
+    </>
   )
 }
 

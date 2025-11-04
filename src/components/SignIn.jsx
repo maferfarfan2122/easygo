@@ -2,6 +2,7 @@ import { texts } from '../i18n/en';
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { SEOHead } from './SEOHead';
 
 const SignIn = () => {
   const { signIn: signInTexts } = texts;
@@ -97,16 +98,23 @@ const SignIn = () => {
   };
 
   return (
-    <section className="signin" id="signin">
-      <div className="signin-container">
-        <div className="signin-content">
-          <h2 className="signin-heading">
-            {isForgotPassword 
-              ? 'Reset Password' 
-              : isSignUp 
-                ? 'Create Account' 
-                : signInTexts.heading}
-          </h2>
+    <>
+      <SEOHead 
+        title={isSignUp ? 'Registro' : 'Iniciar Sesión'}
+        description="Accede a Easy Go para crear CVs profesionales optimizados con IA. Regístrate gratis y comienza a construir tu currículum perfecto."
+        url="https://easygo.com.es/signin"
+      />
+      
+      <section className="signin" id="signin">
+        <div className="signin-container">
+          <div className="signin-content">
+            <h1 className="signin-heading">
+              {isForgotPassword 
+                ? 'Reset Password' 
+                : isSignUp 
+                  ? 'Create Account' 
+                  : signInTexts.heading}
+            </h1>
           <p className="signin-intro">
             {isForgotPassword
               ? 'Enter your email to receive a password reset link'
@@ -243,6 +251,7 @@ const SignIn = () => {
         </div>
       </div>
     </section>
+    </>
   );
 };
 

@@ -16,8 +16,20 @@ DEBUG = os.getenv("DEBUG", "True").lower() == "true"
 # Crear aplicación FastAPI
 app = FastAPI(
     title="Easy Go CV Builder API",
-    description="API para generar CVs optimizados con IA",
-    version="1.0.0"
+    description="API para generar CVs profesionales optimizados con Inteligencia Artificial. Análisis de ofertas de trabajo y optimización ATS.",
+    version="1.0.0",
+    docs_url="/api/docs",
+    redoc_url="/api/redoc",
+    openapi_tags=[
+        {
+            "name": "health",
+            "description": "Endpoints de estado y salud de la API"
+        },
+        {
+            "name": "cv",
+            "description": "Endpoints para generación y optimización de CVs con IA"
+        }
+    ]
 )
 
 # Configurar CORS
@@ -39,7 +51,7 @@ app.add_middleware(
 )
 
 
-@app.get("/")
+@app.get("/", tags=["health"])
 async def root():
     """Endpoint raíz para verificar que la API está funcionando"""
     return {
@@ -49,12 +61,14 @@ async def root():
             "health": "/health",
             "generate_cv": "/api/cv/generate",
             "optimize_cv": "/api/cv/optimize",
-            "suggestions": "/api/cv/suggestions"
+            "suggestions": "/api/cv/suggestions",
+            "sitemap": "/api/sitemap",
+            "robots": "/api/robots"
         }
     }
 
 
-@app.get("/health")
+@app.get("/health", tags=["health"])
 async def health_check():
     """Verifica el estado de la API y servicios"""
     openai_configured = bool(os.getenv("OPENAI_API_KEY"))
@@ -68,7 +82,37 @@ async def health_check():
     }
 
 
-@app.post("/api/cv/suggestions")
+@app.get("/api/sitemap", tags=["health"])
+async def get_sitemap():
+    """Retorna información del sitemap para SEO"""
+    return JSONResponse(content={
+        "urls": [
+            {
+                "loc": "https://easygo.com.es/",
+                "priority": "1.0",
+                "changefreq": "weekly"
+            },
+            {
+                "loc": "https://easygo.com.es/signin",
+                "priority": "0.8",
+                "changefreq": "monthly"
+            }
+        ]
+    })
+
+
+@app.get("/api/robots", tags=["health"])
+async def get_robots_info():
+    """Retorna información de robots.txt"""
+    return {
+        "status": "ok",
+        "crawlable": True,
+        "user_agent": "*",
+        "disallow": ["/dashboard", "/tools/cv-builder"]
+    }
+
+
+@app.post("/api/cv/suggestions", tags=["cv"])
 async def get_cv_suggestions(request: dict):
     """
     Genera sugerencias para el CV basándose en la descripción del trabajo.
@@ -77,7 +121,7 @@ async def get_cv_suggestions(request: dict):
         job_description: str - Descripción del puesto de trabajo
     
     Returns:
-        Lista de sugerencias
+        Lista de sugerencias optimizadas con IA
     """
     try:
         job_description = request.get("job_description")
@@ -96,13 +140,13 @@ async def get_cv_suggestions(request: dict):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/api/cv/optimize")
+@app.post("/api/cv/optimize", tags=["cv"])
 async def optimize_cv(request: CVRequest):
     """
     Optimiza el contenido del CV usando GPT-4 basándose en la descripción del trabajo.
     
     Returns:
-        Contenido optimizado y sugerencias
+        Contenido optimizado con IA y sugerencias personalizadas
     """
     try:
         # Validar que existe API key de OpenAI
@@ -144,13 +188,13 @@ async def optimize_cv(request: CVRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/api/cv/generate")
+@app.post("/api/cv/generate", tags=["cv"])
 async def generate_cv(request: CVRequest):
     """
-    Genera un PDF del CV completo (optimizado o normal).
+    Genera un PDF del CV profesional optimizado con IA.
     
     Returns:
-        PDF del CV como archivo descargable
+        PDF del CV como archivo descargable en formato profesional
     """
     try:
         # Validar que existe API key de OpenAI
@@ -196,13 +240,13 @@ async def generate_cv(request: CVRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/api/cv/generate-without-optimization")
+@app.post("/api/cv/generate-without-optimization", tags=["cv"])
 async def generate_cv_without_optimization(request: CVRequest):
     """
-    Genera un PDF del CV sin optimización de IA (más rápido).
+    Genera un PDF del CV profesional sin optimización de IA (generación rápida).
     
     Returns:
-        PDF del CV como archivo descargable
+        PDF del CV en formato profesional como archivo descargable
     """
     try:
         # Convertir request a diccionario
