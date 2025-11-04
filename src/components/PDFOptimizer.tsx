@@ -1,19 +1,42 @@
 import { useState } from 'react';
 import { Upload, FileText, Download, TrendingUp, AlertCircle, CheckCircle, Zap, Sparkles, Gauge, X } from 'lucide-react';
 
-const PDFOptimizer = () => {
-  const [file, setFile] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [analysis, setAnalysis] = useState(null);
-  const [optimizedPdfUrl, setOptimizedPdfUrl] = useState(null);
-  const [error, setError] = useState(null);
-  const [mode, setMode] = useState('optimize'); // 'analyze' or 'optimize'
-  const [optimizationMode, setOptimizationMode] = useState('medium'); // 'light', 'medium', 'aggressive'
-  const [dragActive, setDragActive] = useState(false);
-  const [progress, setProgress] = useState(0);
+type ModeType = 'analyze' | 'optimize';
+type OptimizationModeType = 'light' | 'medium' | 'aggressive';
 
-  const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
+interface AnalysisData {
+  analysis?: {
+    file_size_mb: number;
+    num_pages: number;
+    num_images: number;
+    optimization_potential: string;
+  };
+  recommendations?: Record<string, string>;
+  success?: boolean;
+  optimizationStats?: {
+    processingTime: string;
+    originalSizeMB: number;
+    optimizedSizeMB: number;
+    reductionPercent: number;
+    imagesCompressed: number;
+    pages: number;
+    mode: string;
+  };
+}
+
+const PDFOptimizer = () => {
+  const [file, setFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [analysis, setAnalysis] = useState<AnalysisData | null>(null);
+  const [optimizedPdfUrl, setOptimizedPdfUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [mode, setMode] = useState<ModeType>('optimize');
+  const [optimizationMode, setOptimizationMode] = useState<OptimizationModeType>('medium');
+  const [dragActive, setDragActive] = useState<boolean>(false);
+  const [progress, setProgress] = useState<number>(0);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
     
     if (selectedFile && selectedFile.type === 'application/pdf') {
       setFile(selectedFile);
@@ -26,7 +49,7 @@ const PDFOptimizer = () => {
     }
   };
 
-  const handleDrop = (e) => {
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setDragActive(false);
     const droppedFile = e.dataTransfer.files[0];
@@ -41,12 +64,12 @@ const PDFOptimizer = () => {
     }
   };
 
-  const handleDragOver = (e) => {
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setDragActive(true);
   };
 
-  const handleDragLeave = (e) => {
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setDragActive(false);
   };
@@ -95,7 +118,8 @@ const PDFOptimizer = () => {
       const data = await response.json();
       setAnalysis(data);
     } catch (err) {
-      setError(`❌ ${err.message || 'Error al analizar el PDF. Intenta de nuevo.'}`);
+      const errorMessage = err instanceof Error ? err.message : 'Error al analizar el PDF. Intenta de nuevo.';
+      setError(`❌ ${errorMessage}`);
       console.error('Analysis error:', err);
     } finally {
       setLoading(false);
@@ -156,12 +180,12 @@ const PDFOptimizer = () => {
       setAnalysis({
         success: true,
         optimizationStats: {
-          processingTime,
-          originalSizeMB: parseFloat(originalSizeMB) || 0,
-          optimizedSizeMB: parseFloat(optimizedSizeMB) || 0,
-          reductionPercent: parseFloat(reductionPercent) || 0,
-          imagesCompressed: parseInt(imagesCompressed) || 0,
-          pages: parseInt(pages) || 0,
+          processingTime: processingTime || '',
+          originalSizeMB: parseFloat(originalSizeMB || '0') || 0,
+          optimizedSizeMB: parseFloat(optimizedSizeMB || '0') || 0,
+          reductionPercent: parseFloat(reductionPercent || '0') || 0,
+          imagesCompressed: parseInt(imagesCompressed || '0') || 0,
+          pages: parseInt(pages || '0') || 0,
           mode: optimizationMode
         }
       });
@@ -174,7 +198,8 @@ const PDFOptimizer = () => {
       link.click();
       document.body.removeChild(link);
     } catch (err) {
-      setError(`❌ ${err.message || 'Error al optimizar el PDF. Intenta de nuevo.'}`);
+      const errorMessage = err instanceof Error ? err.message : 'Error al optimizar el PDF. Intenta de nuevo.';
+      setError(`❌ ${errorMessage}`);
       console.error('Optimization error:', err);
     } finally {
       setLoading(false);
@@ -182,7 +207,7 @@ const PDFOptimizer = () => {
     }
   };
 
-  const getModeColor = (modeName) => {
+  const getModeColor = (modeName: OptimizationModeType): string => {
     switch(modeName) {
       case 'light': return 'blue';
       case 'medium': return 'green';
@@ -191,7 +216,7 @@ const PDFOptimizer = () => {
     }
   };
 
-  const getModeIcon = (modeName) => {
+  const getModeIcon = (modeName: OptimizationModeType): React.ReactNode => {
     switch(modeName) {
       case 'light': return <Gauge className="w-5 h-5" />;
       case 'medium': return <Zap className="w-5 h-5" />;
@@ -200,7 +225,7 @@ const PDFOptimizer = () => {
     }
   };
 
-  const getModeDescription = (modeName) => {
+  const getModeDescription = (modeName: OptimizationModeType): string => {
     switch(modeName) {
       case 'light': return '120 DPI • 50-60% reducción • Buena calidad';
       case 'medium': return '96 DPI • 65-75% reducción • Balanceado';
@@ -251,7 +276,7 @@ const PDFOptimizer = () => {
           onDrop={handleDrop}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
-          onClick={() => !file && document.getElementById('file-input').click()}
+          onClick={() => !file && document.getElementById('file-input')?.click()}
         >
           {file ? (
             <div className="animate-slide-up">
@@ -334,7 +359,7 @@ const PDFOptimizer = () => {
               Modo de Optimización:
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {['light', 'medium', 'aggressive'].map((modeName) => (
+              {(['light', 'medium', 'aggressive'] as const).map((modeName) => (
                 <button
                   key={modeName}
                   onClick={() => setOptimizationMode(modeName)}
@@ -559,7 +584,7 @@ const PDFOptimizer = () => {
               </div>
             </div>
 
-            {optimizedPdfUrl && (
+            {optimizedPdfUrl && file && (
               <a
                 href={optimizedPdfUrl}
                 download={`optimized_${optimizationMode}_${file.name}`}
@@ -573,7 +598,7 @@ const PDFOptimizer = () => {
         )}
       </div>
 
-      <style jsx>{`
+      <style>{`
         @keyframes fade-in {
           from { opacity: 0; }
           to { opacity: 1; }
