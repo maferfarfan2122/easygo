@@ -297,21 +297,24 @@ const InstallPWA = () => {
           padding: 40px 32px 32px;
         }
 
-        .ios-modal__icon {
+        .install-pwa-modal-icon {
           width: 64px;
           height: 64px;
-          background: #111827;
-          border-radius: 9999px;
-          display: inline-grid;
-          place-items: center;
-          margin-bottom: 16px;
+          background: #f0fdf4;
+          border-radius: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 24px;
         }
 
-        .ios-modal__icon svg {
+        .install-pwa-modal-icon .icon-large {
           width: 32px;
           height: 32px;
-          color: #ffffff;
-        }        .install-pwa-modal-title {
+          color: #16a34a;
+        }
+
+        .install-pwa-modal-title {
           font-size: 24px;
           font-weight: 600;
           color: #111827;
@@ -329,67 +332,76 @@ const InstallPWA = () => {
         }
 
         /* === STEPS === */
-        .ios-modal__steps {
-          margin-bottom: 32px;
+        .install-pwa-steps {
+          list-style: none;
+          padding: 0;
+          margin: 0;
         }
 
-        .ios-modal__step {
-          display: grid;
-          grid-template-columns: auto 1fr;
+        .install-pwa-step {
+          display: flex;
           gap: 16px;
           margin-bottom: 24px;
         }
 
-        .ios-modal__step:last-child {
+        .install-pwa-step:last-child {
           margin-bottom: 0;
         }
 
-        .ios-modal__step-number {
+        .install-pwa-step-number {
           width: 32px;
           height: 32px;
           background: #111827;
           color: #ffffff;
-          border-radius: 9999px;
-          display: grid;
-          place-items: center;
-          font-weight: 600;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
           font-size: 14px;
+          font-weight: 600;
           flex-shrink: 0;
         }
 
-        .ios-modal__step-content {
-          display: grid;
-          grid-template-columns: auto 1fr;
+        .install-pwa-step-content {
+          flex: 1;
+          display: flex;
           gap: 12px;
-          align-items: start;
         }
 
-        .ios-modal__step-icon {
+        .install-pwa-step-icon {
           width: 40px;
           height: 40px;
-          background: #f3f4f6;
-          border-radius: 12px;
-          display: grid;
-          place-items: center;
+          background: #f9fafb;
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
         }
 
-        .ios-modal__step-icon svg {
+        .install-pwa-step-icon .icon-small {
           width: 20px;
           height: 20px;
-          color: #111827;
+          color: #6b7280;
         }
 
-        .ios-modal__step-text h3 {
-          font-size: 16px;
+        .install-pwa-step-text {
+          flex: 1;
+        }
+
+        .install-pwa-step-text strong {
+          display: block;
+          font-size: 15px;
           font-weight: 600;
           color: #111827;
-          margin: 0 0 4px 0;
+          margin-bottom: 4px;
         }
 
-        .ios-modal__step-text p {
-          font-size: 14px;
+        .install-pwa-step-text span {
+          display: block;
+          font-size: 13px;
           color: #6b7280;
-          margin: 0;
+          line-height: 1.4;
         }
 
         /* === FOOTER === */

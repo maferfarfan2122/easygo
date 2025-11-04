@@ -10,6 +10,7 @@ interface AuthContextType {
   error: string | null;
   signUp: (email: string, password: string) => Promise<{ data: any; error: string | null }>;
   signIn: (email: string, password: string) => Promise<{ data: any; error: string | null }>;
+  signInWithGoogle: () => Promise<{ data: any; error: string | null }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ data: any; error: string | null }>;
   updatePassword: (newPassword: string) => Promise<{ data: any; error: string | null }>;
@@ -112,6 +113,36 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   }
 
+  // Función para iniciar sesión con Google
+  const signInWithGoogle = async () => {
+    try {
+      setError(null)
+      setLoading(true)
+      
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          }
+        }
+      })
+
+      if (error) throw error
+
+      return { data, error: null }
+    } catch (err) {
+      const error = err as Error
+      console.error('Google SignIn error:', error)
+      setError(error.message)
+      return { data: null, error: error.message }
+    } finally {
+      setLoading(false)
+    }
+  }
+
   // Función para cerrar sesión
   const signOut = async () => {
     try {
@@ -178,6 +209,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     error,
     signUp,
     signIn,
+    signInWithGoogle,
     signOut,
     resetPassword,
     updatePassword
