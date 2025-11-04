@@ -10,6 +10,7 @@ import CVBuilder from './components/CVBuilder'
 import PDFOptimizer from './components/PDFOptimizer'
 import ForgotPassword from './components/ForgotPassword'
 import ResetPassword from './components/ResetPassword'
+import ConfirmEmail from './components/ConfirmEmail'
 import ProtectedRoute from './components/ProtectedRoute'
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
             <Route path="/signin" element={<SignIn />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/confirm-email" element={<ConfirmEmail />} />
             <Route 
               path="/dashboard" 
               element={
