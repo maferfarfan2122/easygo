@@ -1,5 +1,5 @@
 """
-🚀 PDF Optimizer - Conversión a Imagen Simplificada
+🚀 PDF Optimizer - Conversión a Imagen con Máxima Compresión
 
 Estrategia SIMPLE y EFECTIVA:
 1. Convertir cada página del PDF a imagen
@@ -9,13 +9,13 @@ Estrategia SIMPLE y EFECTIVA:
 Ventajas:
 - ✅ Funciona con CUALQUIER PDF (100% compatibilidad)
 - ✅ Código simple y mantenible
-- ✅ Garantiza reducción de tamaño
+- ✅ Garantiza reducción de tamaño MÁXIMA
 - ✅ Sin problemas de compatibilidad
 
-Modos de optimización:
-- Light: ~30-40% reducción (200 DPI, calidad 85)
-- Medium: ~50-60% reducción (150 DPI, calidad 75)
-- Aggressive: ~70-80% reducción (100 DPI, calidad 60)
+Modos de optimización (ALTAMENTE COMPRESIVOS):
+- Light: ~50-60% reducción (120 DPI, calidad 70)
+- Medium: ~65-75% reducción (96 DPI, calidad 55) ⭐ RECOMENDADO
+- Aggressive: ~75-85% reducción (72 DPI, calidad 40)
 
 Velocidad: 1-3 segundos por página
 Costo: GRATIS (sin IA)
@@ -35,11 +35,11 @@ class PDFOptimizerSimple:
     Estrategia: PDF → Imágenes → Comprimir → Nuevo PDF
     """
     
-    # Configuración por modo
+    # Configuración por modo - OPTIMIZADO PARA MÁXIMA COMPRESIÓN
     SETTINGS = {
-        'light': {'dpi': 200, 'quality': 85},
-        'medium': {'dpi': 150, 'quality': 75},
-        'aggressive': {'dpi': 100, 'quality': 60}
+        'light': {'dpi': 120, 'quality': 70},      # ~50-60% reducción
+        'medium': {'dpi': 96, 'quality': 55},      # ~65-75% reducción
+        'aggressive': {'dpi': 72, 'quality': 40}   # ~75-85% reducción
     }
     
     def __init__(self):
@@ -237,9 +237,9 @@ class PDFOptimizerSimple:
                 'num_images': num_images,
                 'optimization_potential': optimization_potential,
                 'estimated_reduction': {
-                    'light': '30-40% (200 DPI, quality 85)',
-                    'medium': '50-60% (150 DPI, quality 75)',
-                    'aggressive': '70-80% (100 DPI, quality 60)'
+                    'light': '50-60% (120 DPI, quality 70)',
+                    'medium': '65-75% (96 DPI, quality 55)',
+                    'aggressive': '75-85% (72 DPI, quality 40)'
                 }
             }
             

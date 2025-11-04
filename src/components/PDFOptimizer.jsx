@@ -151,9 +151,9 @@ const PDFOptimizer = () => {
 
   const getModeDescription = (modeName) => {
     switch(modeName) {
-      case 'light': return '200 DPI • 20-30% reduction • Best quality';
-      case 'medium': return '150 DPI • 40-50% reduction • Balanced';
-      case 'aggressive': return '100 DPI • 60-70% reduction • Max compression';
+      case 'light': return '120 DPI • 50-60% reduction • Good quality';
+      case 'medium': return '96 DPI • 65-75% reduction • Balanced';
+      case 'aggressive': return '72 DPI • 75-85% reduction • Max compression';
       default: return '';
     }
   };
