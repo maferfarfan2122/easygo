@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Lock, CheckCircle, AlertCircle, ArrowLeft } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+import { Lock, CheckCircle, AlertCircle, ArrowLeft, Loader2 } from 'lucide-react';
 import { SEOHead } from './SEOHead';
 
 const ResetPassword = () => {
@@ -15,18 +16,58 @@ const ResetPassword = () => {
     text: '' 
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [isValidToken, setIsValidToken] = useState(false);
+  const [checkingToken, setCheckingToken] = useState(true);
 
-  // Verificar que hay un token de recuperación en la URL
+  // Verificar que hay un token de recuperación válido
   useEffect(() => {
-    const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    const accessToken = hashParams.get('access_token');
-    
-    if (!accessToken) {
-      setMessage({ 
-        type: 'error', 
-        text: 'No se encontró un token de recuperación válido. Por favor solicita un nuevo enlace.' 
-      });
-    }
+    const checkRecoveryToken = async () => {
+      try {
+        // Supabase maneja el hash automáticamente
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Error getting session:', error);
+          setMessage({ 
+            type: 'error', 
+            text: 'Error al verificar el token. Por favor solicita un nuevo enlace.' 
+          });
+          setIsValidToken(false);
+        } else if (session) {
+          // Hay una sesión válida, el usuario puede cambiar la contraseña
+          setIsValidToken(true);
+          console.log('Session found, user can reset password');
+        } else {
+          // No hay sesión, verificar si hay token en el hash
+          const hashParams = new URLSearchParams(window.location.hash.substring(1));
+          const accessToken = hashParams.get('access_token');
+          const type = hashParams.get('type');
+          
+          if (accessToken && type === 'recovery') {
+            // Hay un token de recuperación en la URL
+            setIsValidToken(true);
+            console.log('Recovery token found in URL');
+          } else {
+            setMessage({ 
+              type: 'error', 
+              text: 'No se encontró un token de recuperación válido. Por favor solicita un nuevo enlace desde la página de recuperación de contraseña.' 
+            });
+            setIsValidToken(false);
+          }
+        }
+      } catch (error) {
+        console.error('Error checking token:', error);
+        setMessage({ 
+          type: 'error', 
+          text: 'Error al verificar el token. Por favor intenta de nuevo.' 
+        });
+        setIsValidToken(false);
+      } finally {
+        setCheckingToken(false);
+      }
+    };
+
+    checkRecoveryToken();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -84,21 +125,81 @@ const ResetPassword = () => {
       <div className="auth-page">
         <div className="auth-page__container">
           
-          {/* Header */}
-          <div className="auth-page__header">
-            <div className="auth-page__icon">
-              <Lock className="icon-large" />
+          {/* Loading State */}
+          {checkingToken ? (
+            <div className="auth-page__loading">
+              <div className="auth-page__icon">
+                <Loader2 className="icon-large icon-spin" />
+              </div>
+              <h1 className="auth-page__title">
+                Verificando...
+              </h1>
+              <p className="auth-page__subtitle">
+                Por favor espera un momento
+              </p>
             </div>
-            <h1 className="auth-page__title">
-              Restablecer Contraseña
-            </h1>
-            <p className="auth-page__subtitle">
-              Ingresa tu nueva contraseña
-            </p>
-          </div>
+          ) : !isValidToken ? (
+            // Error State - No valid token
+            <>
+              <div className="auth-page__header">
+                <div className="auth-page__icon auth-page__icon--error">
+                  <AlertCircle className="icon-large" />
+                </div>
+                <h1 className="auth-page__title">
+                  Token Inválido
+                </h1>
+                <p className="auth-page__subtitle">
+                  El enlace de recuperación no es válido o ha expirado
+                </p>
+              </div>
 
-          {/* Form */}
-          <form className="auth-page__form" onSubmit={handleSubmit}>
+              <div className="auth-page__form">
+                {message.text && (
+                  <div className={`auth-page__message auth-page__message--${message.type}`}>
+                    <div className="auth-page__message-icon">
+                      <AlertCircle className="icon-small" />
+                    </div>
+                    <span className="auth-page__message-text">{message.text}</span>
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  className="auth-page__button"
+                  onClick={() => navigate('/forgot-password')}
+                >
+                  Solicitar Nuevo Enlace
+                </button>
+
+                <div className="auth-page__footer">
+                  <button
+                    type="button"
+                    className="auth-page__link"
+                    onClick={() => navigate('/signin')}
+                  >
+                    <ArrowLeft className="icon-small" />
+                    Volver al inicio de sesión
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : (
+            // Valid Token - Show Form
+            <>
+              <div className="auth-page__header">
+                <div className="auth-page__icon">
+                  <Lock className="icon-large" />
+                </div>
+                <h1 className="auth-page__title">
+                  Restablecer Contraseña
+                </h1>
+                <p className="auth-page__subtitle">
+                  Ingresa tu nueva contraseña
+                </p>
+              </div>
+
+              {/* Form */}
+              <form className="auth-page__form" onSubmit={handleSubmit}>
             
             {/* Password Input */}
             <div className="auth-page__form-group">
@@ -200,6 +301,8 @@ const ResetPassword = () => {
               🔒 Tu contraseña está protegida con encriptación de nivel empresarial
             </p>
           </div>
+        </>
+        )}
         </div>
 
         <style>{`
@@ -223,6 +326,11 @@ const ResetPassword = () => {
             margin-bottom: 48px;
           }
 
+          .auth-page__loading {
+            text-align: center;
+            padding: 40px 0;
+          }
+
           .auth-page__icon {
             width: 80px;
             height: 80px;
@@ -233,6 +341,14 @@ const ResetPassword = () => {
             position: relative;
           }
 
+          .auth-page__icon--error {
+            background: #fef2f2;
+          }
+
+          .auth-page__icon--error .icon-large {
+            color: #dc2626;
+          }
+
           .auth-page__icon .icon-large {
             width: 40px;
             height: 40px;
@@ -241,6 +357,15 @@ const ResetPassword = () => {
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+          }
+
+          .icon-spin {
+            animation: spin 1s linear infinite;
+          }
+
+          @keyframes spin {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
           }
 
           .auth-page__title {
