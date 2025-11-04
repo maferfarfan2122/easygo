@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import apiService from '../services/apiService';
 
 const CVBuilder = () => {
   const navigate = useNavigate();
@@ -12,6 +13,14 @@ const CVBuilder = () => {
   const [error, setError] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [optimizedContent, setOptimizedContent] = useState(null);
+  const [activeRequests, setActiveRequests] = useState(0);
+
+  // Cleanup on unmount - cancel pending requests
+  useEffect(() => {
+    return () => {
+      apiService.cancelAllRequests();
+    };
+  }, []);
 
   // Datos del formulario
   const [formData, setFormData] = useState({
@@ -52,8 +61,6 @@ const CVBuilder = () => {
     languageInput: '',
     languageProficiency: 'Intermediate'
   });
-
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
   // Handlers
   const handleInputChange = (section, field, value, index = null) => {
@@ -160,28 +167,30 @@ const CVBuilder = () => {
 
     setLoading(true);
     setError('');
+    setActiveRequests(prev => prev + 1);
 
     try {
-      const response = await fetch(`${API_URL}/api/cv/suggestions`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ job_description: formData.jobDescription })
+      const data = await apiService.post('/api/cv/suggestions', {
+        job_description: formData.jobDescription
       });
 
-      if (!response.ok) throw new Error('Failed to fetch suggestions');
-
-      const data = await response.json();
-      setSuggestions(data.suggestions || []);
+      if (data) {
+        setSuggestions(data.suggestions || []);
+      }
     } catch (err) {
-      setError(err.message);
+      if (err.message !== 'The user aborted a request.') {
+        setError(err.message || 'Failed to fetch suggestions');
+      }
     } finally {
       setLoading(false);
+      setActiveRequests(prev => Math.max(0, prev - 1));
     }
   };
 
   const optimizeCV = async () => {
     setLoading(true);
     setError('');
+    setActiveRequests(prev => prev + 1);
 
     try {
       const payload = {
@@ -193,27 +202,26 @@ const CVBuilder = () => {
         languages: formData.languages
       };
 
-      const response = await fetch(`${API_URL}/api/cv/optimize`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+      const data = await apiService.post('/api/cv/optimize', payload);
 
-      if (!response.ok) throw new Error('Failed to optimize CV');
-
-      const data = await response.json();
-      setOptimizedContent(data.optimized_content);
-      setCurrentStep(6); // Ir a preview
+      if (data) {
+        setOptimizedContent(data.optimized_content);
+        setCurrentStep(6); // Ir a preview
+      }
     } catch (err) {
-      setError(err.message);
+      if (err.message !== 'The user aborted a request.') {
+        setError(err.message || 'Failed to optimize CV');
+      }
     } finally {
       setLoading(false);
+      setActiveRequests(prev => Math.max(0, prev - 1));
     }
   };
 
   const generatePDF = async (withOptimization = true) => {
     setLoading(true);
     setError('');
+    setActiveRequests(prev => prev + 1);
 
     try {
       const payload = {
@@ -226,31 +234,19 @@ const CVBuilder = () => {
       };
 
       const endpoint = withOptimization 
-        ? `${API_URL}/api/cv/generate`
-        : `${API_URL}/api/cv/generate-without-optimization`;
+        ? '/api/cv/generate'
+        : '/api/cv/generate-without-optimization';
 
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
-      if (!response.ok) throw new Error('Failed to generate PDF');
-
-      // Descargar PDF
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${formData.personalInfo.full_name.replace(/\s+/g, '_')}_CV.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      const filename = `${formData.personalInfo.full_name.replace(/\s+/g, '_')}_CV.pdf`;
+      
+      await apiService.download(endpoint, payload, filename);
     } catch (err) {
-      setError(err.message);
+      if (err.message !== 'The user aborted a request.') {
+        setError(err.message || 'Failed to generate PDF');
+      }
     } finally {
       setLoading(false);
+      setActiveRequests(prev => Math.max(0, prev - 1));
     }
   };
 
@@ -621,6 +617,25 @@ const CVBuilder = () => {
         </button>
         <h1>AI-Powered CV Builder</h1>
         <p className="subtitle">Create a professional CV optimized for your dream job</p>
+        
+        {/* Active Requests Indicator */}
+        {activeRequests > 0 && (
+          <div className="active-requests-indicator">
+            <div className="spinner"></div>
+            <span>{activeRequests} request{activeRequests > 1 ? 's' : ''} in progress...</span>
+            <button 
+              className="btn-cancel-requests"
+              onClick={() => {
+                apiService.cancelAllRequests();
+                setActiveRequests(0);
+                setLoading(false);
+              }}
+              title="Cancel all pending requests"
+            >
+              Cancel All
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Progress Bar */}
