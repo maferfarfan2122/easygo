@@ -1100,29 +1100,34 @@ async def ats_check_tool(cv_data: Dict):
 
 @app.post("/api/tools/pdf-optimizer", tags=["Tools"])
 async def optimize_pdf_file(
-    file: UploadFile = File(..., description="PDF file to optimize")
+    file: UploadFile = File(..., description="PDF file to optimize"),
+    mode: str = "medium"  # Query parameter: light, medium, aggressive
 ):
     """
-    🚀 PDF OPTIMIZER - Optimiza PDFs de CV sin usar IA (100% GRATIS)
+    🚀 PDF OPTIMIZER - Optimiza CUALQUIER PDF (100% GRATIS)
     
-    Proceso:
-    1. Extrae texto del PDF subido
-    2. Analiza estructura (experiencia, skills, educación)
-    3. Optimiza contenido con reglas nativas:
-       - Reemplaza verbos débiles con action verbs
-       - Mejora formato de bullets
-       - Optimiza para ATS
-    4. Genera nuevo PDF optimizado
+    Comprime y optimiza PDFs manteniendo la calidad visual:
+    - ✅ Funciona con CUALQUIER tipo de PDF (facturas, CVs, contratos, reportes)
+    - ✅ Comprime imágenes (mantiene calidad visual)
+    - ✅ Elimina objetos duplicados
+    - ✅ Reduce tamaño 40-70% según modo
+    - ✅ Mantiene estructura y diseño original
     
-    Input: PDF file (multipart/form-data)
-    Output: Optimized PDF + Analysis
+    Modos:
+    - light: ~20-30% reducción (200 DPI, alta calidad)
+    - medium: ~40-50% reducción (150 DPI, calidad balanceada) [DEFAULT]
+    - aggressive: ~60-70% reducción (100 DPI, máxima compresión)
     
-    Velocidad: ~2-3 segundos
+    Velocidad: ~2-5 segundos
     Costo: GRATIS (0 tokens)
     """
     start_time = time.time()
     
     try:
+        # Validar modo
+        if mode not in ['light', 'medium', 'aggressive']:
+            mode = 'medium'
+        
         # Validar que sea PDF
         if not file.filename.endswith('.pdf'):
             raise HTTPException(
@@ -1130,56 +1135,36 @@ async def optimize_pdf_file(
                 detail="Only PDF files are accepted"
             )
         
-        print(f"📄 Processing PDF: {file.filename}")
+        print(f"📄 Processing PDF: {file.filename} (mode: {mode})")
         
         # Leer archivo
         pdf_content = await file.read()
-        pdf_file = io.BytesIO(pdf_content)
         
-        # 1. Extraer texto del PDF
-        print("🔍 Extracting text from PDF...")
-        text = pdf_optimizer.extract_text_from_pdf(pdf_file)
-        
-        if not text or len(text) < 50:
-            raise HTTPException(
-                status_code=400,
-                detail="Could not extract text from PDF. Make sure the PDF is not image-based."
-            )
-        
-        # 2. Parsear estructura del CV
-        print("📋 Parsing CV structure...")
-        cv_data = pdf_optimizer.parse_cv_structure(text)
-        
-        # 3. Analizar PDF original
-        print("📊 Analyzing original PDF...")
-        analysis = pdf_optimizer.analyze_pdf(cv_data)
-        
-        # 4. Optimizar contenido
-        print("⚡ Optimizing content...")
-        optimized_cv_data = pdf_optimizer.optimize_content(cv_data)
-        
-        # 5. Generar PDF optimizado
-        print("📝 Generating optimized PDF...")
-        optimized_pdf_buffer = pdf_optimizer.generate_optimized_pdf(optimized_cv_data)
+        # Optimizar PDF usando pikepdf + Pillow
+        print(f"� Optimizing PDF with mode: {mode}...")
+        optimized_bytes, stats = pdf_optimizer.optimize_pdf(pdf_content, mode)
         
         elapsed = time.time() - start_time
         print(f"✅ PDF optimized in {elapsed:.2f}s")
+        print(f"📊 Stats: {stats}")
         
         # Sanitizar filename para evitar problemas de encoding
-        safe_filename = f"optimized_{file.filename}"
-        # Usar RFC 5987 encoding para soportar caracteres Unicode
+        safe_filename = f"optimized_{mode}_{file.filename}"
         encoded_filename = quote(safe_filename.encode('utf-8'))
         
         # Retornar PDF optimizado
         return StreamingResponse(
-            optimized_pdf_buffer,
+            io.BytesIO(optimized_bytes),
             media_type="application/pdf",
             headers={
                 "Content-Disposition": f"attachment; filename*=UTF-8''{encoded_filename}",
                 "X-Processing-Time": f"{elapsed:.2f}s",
-                "X-Original-ATS-Score": str(analysis['ats_score']),
-                "X-Weak-Verbs-Fixed": str(analysis['weak_verbs_found']),
-                "X-Action-Verbs-Added": str(analysis['missing_action_verbs'])
+                "X-Optimization-Mode": mode,
+                "X-Original-Size-MB": str(stats.get('original_size_mb', 0)),
+                "X-Optimized-Size-MB": str(stats.get('optimized_size_mb', 0)),
+                "X-Reduction-Percent": str(stats.get('reduction_percent', 0)),
+                "X-Images-Compressed": str(stats.get('images_compressed', 0)),
+                "X-Pages": str(stats.get('num_pages', 0))
             }
         )
     
