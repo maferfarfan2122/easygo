@@ -16,7 +16,6 @@ const SignIn = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
   const [isSignUp, setIsSignUp] = useState(false);
-  const [isForgotPassword, setIsForgotPassword] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -77,27 +76,6 @@ const SignIn = () => {
     }
   };
 
-  const handleForgotPassword = async (e) => {
-    e.preventDefault();
-    setMessage({ type: '', text: '' });
-
-    if (!email) {
-      setMessage({ type: 'error', text: 'Please enter your email address' });
-      return;
-    }
-
-    const { error } = await resetPassword(email);
-    if (error) {
-      setMessage({ type: 'error', text: error });
-    } else {
-      setMessage({ 
-        type: 'success', 
-        text: 'Password reset link sent! Check your email.' 
-      });
-      setIsForgotPassword(false);
-    }
-  };
-
   return (
     <>
       <SEOHead 
@@ -110,23 +88,19 @@ const SignIn = () => {
         <div className="signin-container">
           <div className="signin-content">
             <h1 className="signin-heading">
-              {isForgotPassword 
-                ? 'Reset Password' 
-                : isSignUp 
-                  ? 'Create Account' 
-                  : signInTexts.heading}
+              {isSignUp 
+                ? 'Create Account' 
+                : signInTexts.heading}
             </h1>
           <p className="signin-intro">
-            {isForgotPassword
-              ? 'Enter your email to receive a password reset link'
-              : isSignUp
-                ? 'Sign up to start building websites with AI'
-                : signInTexts.intro}
+            {isSignUp
+              ? 'Sign up to start building websites with AI'
+              : signInTexts.intro}
           </p>
           
           <form 
             className="signin-form" 
-            onSubmit={isForgotPassword ? handleForgotPassword : handleSubmit}
+            onSubmit={handleSubmit}
           >
             <div className="form-group">
               <label htmlFor="email">Email</label>
@@ -141,22 +115,20 @@ const SignIn = () => {
               />
             </div>
             
-            {!isForgotPassword && (
-              <div className="form-group">
-                <label htmlFor="password">Password</label>
-                <input
-                  type="password"
-                  id="password"
-                  placeholder={signInTexts.passwordPlaceholder}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  disabled={loading}
-                />
-              </div>
-            )}
+            <div className="form-group">
+              <label htmlFor="password">Password</label>
+              <input
+                type="password"
+                id="password"
+                placeholder={signInTexts.passwordPlaceholder}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                disabled={loading}
+              />
+            </div>
 
-            {isSignUp && !isForgotPassword && (
+            {isSignUp && (
               <div className="form-group">
                 <label htmlFor="confirmPassword">Confirm Password</label>
                 <input
@@ -171,7 +143,7 @@ const SignIn = () => {
               </div>
             )}
             
-            {!isForgotPassword && !isSignUp && (
+            {!isSignUp && (
               <div className="form-options">
                 <label className="checkbox-label">
                   <input
@@ -186,7 +158,7 @@ const SignIn = () => {
                 <button 
                   type="button"
                   className="forgot-link"
-                  onClick={() => setIsForgotPassword(true)}
+                  onClick={() => navigate('/forgot-password')}
                   disabled={loading}
                 >
                   {signInTexts.forgotPassword}
@@ -207,44 +179,26 @@ const SignIn = () => {
             >
               {loading 
                 ? 'Loading...' 
-                : isForgotPassword 
-                  ? 'Send Reset Link'
-                  : isSignUp 
-                    ? 'Sign Up' 
-                    : signInTexts.submitButton}
+                : isSignUp 
+                  ? 'Sign Up' 
+                  : signInTexts.submitButton}
             </button>
 
             <div className="signin-toggle">
-              {!isForgotPassword ? (
-                <>
-                  <p>
-                    {isSignUp ? 'Already have an account? ' : "Don't have an account? "}
-                    <button
-                      type="button"
-                      className="toggle-link"
-                      onClick={() => {
-                        setIsSignUp(!isSignUp);
-                        setMessage({ type: '', text: '' });
-                      }}
-                      disabled={loading}
-                    >
-                      {isSignUp ? 'Sign In' : 'Sign Up'}
-                    </button>
-                  </p>
-                </>
-              ) : (
+              <p>
+                {isSignUp ? 'Already have an account? ' : "Don't have an account? "}
                 <button
                   type="button"
                   className="toggle-link"
                   onClick={() => {
-                    setIsForgotPassword(false);
+                    setIsSignUp(!isSignUp);
                     setMessage({ type: '', text: '' });
                   }}
                   disabled={loading}
                 >
-                  ← Back to Sign In
+                  {isSignUp ? 'Sign In' : 'Sign Up'}
                 </button>
-              )}
+              </p>
             </div>
           </form>
           
