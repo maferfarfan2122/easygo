@@ -11,13 +11,18 @@ from services.openai_service_optimized import (
     clear_cache,
     get_cache_stats
 )
+from services.cv_optimizer_native import native_optimizer
 from services.pdf_generator import generate_cv_pdf, save_pdf_file
 from services.token_service import token_manager
 import os
 import time
 import asyncio
+import re
 from dotenv import load_dotenv
 from typing import Optional, Dict
+import asyncio
+from dotenv import load_dotenv
+from typing import Optional, Dict, List
 
 # Cargar variables de entorno
 load_dotenv()
@@ -528,6 +533,301 @@ async def generate_cv_without_optimization(
 
 
 # ============================================================================
+# NATIVE CV OPTIMIZER (FREE - NO TOKENS REQUIRED)
+# ============================================================================
+
+@app.post("/api/tools/cv-optimizer-native", tags=["Tools"])
+async def optimize_cv_native(request: dict):
+    """
+    🔧 GRATIS - Optimizador de CV Nativo sin IA
+    
+    Optimiza tu CV usando algoritmos Python puros (sin OpenAI).
+    - ✅ 100% GRATIS (no consume tokens)
+    - ⚡ Ultra rápido (<500ms)
+    - 🎯 Mejora verbos de acción, formato y keywords
+    - 📊 Detecta áreas de mejora
+    
+    Body:
+        cv_data: dict - Datos del CV a optimizar
+        job_description: str (opcional) - Para priorizar keywords
+    
+    Returns:
+        CV optimizado + lista de sugerencias
+    """
+    start_time = time.time()
+    
+    try:
+        cv_data = request.get('cv_data', {})
+        job_description = request.get('job_description', '')
+        
+        if not cv_data:
+            raise HTTPException(status_code=400, detail="cv_data is required")
+        
+        # Optimizar CV con lógica nativa
+        optimized_cv = native_optimizer.optimize_cv(cv_data, job_description)
+        
+        # Generar sugerencias
+        suggestions = native_optimizer.generate_suggestions(cv_data)
+        
+        elapsed = time.time() - start_time
+        
+        return {
+            "success": True,
+            "optimized_cv": optimized_cv,
+            "suggestions": suggestions,
+            "processing_time": f"{elapsed:.3f}s",
+            "cost": "FREE - No tokens used",
+            "method": "Native Python Algorithms"
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Error in native optimizer: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/tools/cv-suggestions-native", tags=["Tools"])
+async def get_cv_suggestions_native(request: dict):
+    """
+    💡 GRATIS - Sugerencias de Mejora sin IA
+    
+    Analiza tu CV y genera sugerencias de mejora usando lógica nativa.
+    - ✅ 100% GRATIS (no consume tokens)
+    - ⚡ Ultra rápido (<100ms)
+    - 📋 5-7 sugerencias accionables
+    
+    Body:
+        cv_data: dict - Datos del CV a analizar
+    
+    Returns:
+        Lista de sugerencias específicas
+    """
+    start_time = time.time()
+    
+    try:
+        cv_data = request.get('cv_data', {})
+        
+        if not cv_data:
+            raise HTTPException(status_code=400, detail="cv_data is required")
+        
+        # Generar sugerencias
+        suggestions = native_optimizer.generate_suggestions(cv_data)
+        
+        elapsed = time.time() - start_time
+        
+        return {
+            "success": True,
+            "suggestions": suggestions,
+            "processing_time": f"{elapsed:.3f}s",
+            "cost": "FREE - No tokens used"
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Error generating native suggestions: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/tools/cv-score", tags=["Tools"])
+async def score_cv(request: dict):
+    """
+    📊 GRATIS - Score ATS de tu CV
+    
+    Analiza qué tan optimizado está tu CV para sistemas ATS.
+    - ✅ 100% GRATIS (no consume tokens)
+    - ⚡ Instantáneo
+    - 📈 Score de 0-100
+    - 💡 Breakdown por categorías
+    
+    Body:
+        cv_data: dict - Datos del CV
+        job_description: str (opcional) - Para análisis de keywords
+    
+    Returns:
+        Score total + desglose por áreas
+    """
+    start_time = time.time()
+    
+    try:
+        cv_data = request.get('cv_data', {})
+        job_description = request.get('job_description', '')
+        
+        if not cv_data:
+            raise HTTPException(status_code=400, detail="cv_data is required")
+        
+        # Calcular scores por categoría
+        scores = {
+            "action_verbs": _score_action_verbs(cv_data),
+            "quantification": _score_quantification(cv_data),
+            "keywords": _score_keywords(cv_data, job_description),
+            "formatting": _score_formatting(cv_data),
+            "completeness": _score_completeness(cv_data)
+        }
+        
+        # Score total (promedio ponderado)
+        total_score = int(
+            scores["action_verbs"] * 0.25 +
+            scores["quantification"] * 0.25 +
+            scores["keywords"] * 0.20 +
+            scores["formatting"] * 0.15 +
+            scores["completeness"] * 0.15
+        )
+        
+        elapsed = time.time() - start_time
+        
+        return {
+            "success": True,
+            "total_score": total_score,
+            "scores": scores,
+            "grade": _get_grade(total_score),
+            "processing_time": f"{elapsed:.3f}s",
+            "cost": "FREE - No tokens used"
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Error scoring CV: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+def _score_action_verbs(cv_data: Dict) -> int:
+    """Score basado en uso de verbos de acción fuertes."""
+    action_verbs = native_optimizer.all_action_verbs
+    weak_words = native_optimizer.WEAK_WORDS
+    
+    text = str(cv_data.get('professional_summary', ''))
+    
+    if cv_data.get('work_experience'):
+        for exp in cv_data['work_experience']:
+            text += ' ' + str(exp.get('responsibilities', ''))
+            text += ' ' + str(exp.get('description', ''))
+    
+    text_lower = text.lower()
+    
+    # Contar verbos de acción
+    action_count = sum(1 for verb in action_verbs if verb.lower() in text_lower)
+    
+    # Contar palabras débiles
+    weak_count = sum(1 for weak in weak_words if weak in text_lower)
+    
+    # Score: más verbos de acción = mejor, más débiles = peor
+    score = min(100, max(0, (action_count * 10) - (weak_count * 5)))
+    
+    return int(score)
+
+
+def _score_quantification(cv_data: Dict) -> int:
+    """Score basado en cuantificación de logros con números."""
+    text = ''
+    
+    if cv_data.get('work_experience'):
+        for exp in cv_data['work_experience']:
+            text += ' ' + str(exp.get('responsibilities', ''))
+            text += ' ' + str(exp.get('description', ''))
+    
+    # Contar números (%, $, cantidades)
+    numbers = re.findall(r'\d+[\%\$]?|\d+\+', text)
+    
+    # Score basado en cantidad de cuantificaciones
+    score = min(100, len(numbers) * 15)
+    
+    return int(score)
+
+
+def _score_keywords(cv_data: Dict, job_description: str) -> int:
+    """Score basado en match de keywords con job description."""
+    if not job_description:
+        return 70  # Score neutral si no hay job description
+    
+    # Extraer keywords del job description
+    job_keywords = native_optimizer._extract_keywords(job_description)
+    
+    if not job_keywords:
+        return 70
+    
+    # Texto del CV
+    cv_text = str(cv_data).lower()
+    
+    # Contar cuántos keywords del job están en el CV
+    matches = sum(1 for kw in job_keywords if kw.lower() in cv_text)
+    
+    # Score: porcentaje de keywords encontrados
+    score = int((matches / len(job_keywords)) * 100)
+    
+    return min(100, score)
+
+
+def _score_formatting(cv_data: Dict) -> int:
+    """Score basado en formato y estructura."""
+    score = 0
+    
+    # Tiene resumen profesional
+    if cv_data.get('professional_summary'):
+        score += 20
+        # Longitud adecuada (50-150 palabras)
+        words = len(cv_data['professional_summary'].split())
+        if 50 <= words <= 150:
+            score += 10
+    
+    # Tiene experiencias laborales
+    if cv_data.get('work_experience') and len(cv_data['work_experience']) > 0:
+        score += 30
+        # Cada experiencia tiene bullets
+        for exp in cv_data['work_experience']:
+            if exp.get('responsibilities') or exp.get('description'):
+                score += 5
+                break
+    
+    # Tiene skills
+    if cv_data.get('skills') and len(cv_data['skills']) >= 5:
+        score += 20
+    
+    # Tiene educación
+    if cv_data.get('education'):
+        score += 20
+    
+    return min(100, score)
+
+
+def _score_completeness(cv_data: Dict) -> int:
+    """Score basado en completitud del CV."""
+    score = 0
+    sections = 0
+    
+    required_sections = [
+        'personal_info',
+        'professional_summary',
+        'work_experience',
+        'education',
+        'skills'
+    ]
+    
+    for section in required_sections:
+        if cv_data.get(section):
+            sections += 1
+            score += 20
+    
+    return min(100, score)
+
+
+def _get_grade(score: int) -> str:
+    """Convierte score numérico en letra."""
+    if score >= 90:
+        return "A+ (Excellent)"
+    elif score >= 80:
+        return "A (Very Good)"
+    elif score >= 70:
+        return "B (Good)"
+    elif score >= 60:
+        return "C (Fair)"
+    else:
+        return "D (Needs Improvement)"
+
+
+# ============================================================================
 # CACHE & PERFORMANCE ENDPOINTS
 # ============================================================================
 
@@ -576,6 +876,210 @@ async def clear_system_cache(
     except HTTPException:
         raise
     except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
+# NATIVE TOOLS (Sin OpenAI - Gratis y Rápido)
+# ============================================================================
+
+@app.post("/api/tools/cv-analyze", tags=["Tools"])
+async def analyze_cv_tool(cv_data: Dict, job_description: Optional[str] = None):
+    """
+    🎯 TOOL: Analiza un CV sin usar IA.
+    
+    Características:
+    - ⚡ Ultra rápido (<1 segundo)
+    - 💰 100% GRATIS (sin tokens)
+    - 🔍 Análisis de keywords
+    - 📊 Score de compatibilidad ATS
+    - 💡 Sugerencias inteligentes
+    
+    Body:
+        cv_data: dict - Datos del CV
+        job_description: str (opcional) - Descripción del trabajo
+    
+    Returns:
+        Análisis completo con sugerencias y scores
+    """
+    start_time = time.time()
+    
+    try:
+        # 1. Generar sugerencias nativas
+        suggestions = generate_suggestions_native(cv_data, job_description)
+        
+        # 2. Analizar compatibilidad ATS
+        ats_analysis = analyze_ats_compatibility(cv_data)
+        
+        # 3. Calcular match score si hay job description
+        match_score = None
+        skills_analysis = None
+        
+        if job_description:
+            match_score = calculate_match_score(cv_data, job_description)
+            
+            # Analizar skills
+            cv_skills = cv_data.get('skills', [])
+            if cv_skills:
+                skills_analysis = match_skills(cv_skills, job_description)
+        
+        elapsed = time.time() - start_time
+        
+        return {
+            "success": True,
+            "analysis": {
+                "suggestions": suggestions,
+                "ats_compatibility": ats_analysis,
+                "match_score": match_score,
+                "skills_analysis": skills_analysis
+            },
+            "processing_time": f"{elapsed:.3f}s",
+            "cost": "FREE - No tokens used",
+            "method": "native_python"
+        }
+    
+    except Exception as e:
+        print(f"❌ Error en CV analysis: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/tools/cv-optimize-native", tags=["Tools"])
+async def optimize_cv_native_tool(cv_data: Dict, job_description: str):
+    """
+    ⚡ TOOL: Optimiza CV sin IA (100% Gratis y Rápido).
+    
+    Optimizaciones:
+    - 🎯 Prioriza skills relevantes
+    - 💪 Reemplaza verbos débiles con action verbs
+    - 📊 Reorganiza bullets por relevancia
+    - 🔑 Optimiza keywords para ATS
+    - ✨ Mejora formato y capitalización
+    
+    NO requiere tokens - NO usa OpenAI.
+    
+    Body:
+        cv_data: dict - Datos del CV
+        job_description: str - Descripción del trabajo objetivo
+    
+    Returns:
+        CV optimizado con análisis de cambios
+    """
+    start_time = time.time()
+    
+    try:
+        # Optimizar CV con algoritmos nativos
+        optimized_cv = optimize_cv_native(cv_data, job_description)
+        
+        # Generar análisis de cambios
+        original_score = calculate_match_score(cv_data, job_description)
+        optimized_score = calculate_match_score(optimized_cv, job_description)
+        improvement = optimized_score - original_score
+        
+        elapsed = time.time() - start_time
+        
+        return {
+            "success": True,
+            "optimized_cv": optimized_cv,
+            "analysis": {
+                "original_score": original_score,
+                "optimized_score": optimized_score,
+                "improvement": improvement,
+                "improvement_percentage": f"+{improvement:.1f}%"
+            },
+            "processing_time": f"{elapsed:.3f}s",
+            "cost": "FREE - No tokens used",
+            "method": "native_python"
+        }
+    
+    except Exception as e:
+        print(f"❌ Error en native optimization: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/tools/skills-matcher", tags=["Tools"])
+async def match_skills_tool(skills: List[str], job_description: str):
+    """
+    🎯 TOOL: Analiza qué skills coinciden con un trabajo.
+    
+    Ultra rápido - sin IA.
+    
+    Body:
+        skills: list[str] - Lista de skills del CV
+        job_description: str - Descripción del trabajo
+    
+    Returns:
+        Skills matched, unmatched y missing
+    """
+    try:
+        skills_analysis = match_skills(skills, job_description)
+        
+        return {
+            "success": True,
+            "skills_analysis": skills_analysis,
+            "recommendations": [
+                f"✅ {len(skills_analysis['matched'])} skills match the job requirements",
+                f"⚠️ {len(skills_analysis['missing'])} important skills are missing from your CV",
+                f"💡 Consider adding: {', '.join(skills_analysis['missing'][:3])}" if skills_analysis['missing'] else "Great skill coverage!"
+            ],
+            "cost": "FREE - No tokens used"
+        }
+    
+    except Exception as e:
+        print(f"❌ Error en skills matcher: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/tools/ats-check", tags=["Tools"])
+async def ats_check_tool(cv_data: Dict):
+    """
+    📋 TOOL: Verifica compatibilidad con sistemas ATS.
+    
+    Analiza:
+    - Estructura del CV
+    - Densidad de keywords
+    - Formato y secciones
+    - Longitud y contenido
+    
+    Body:
+        cv_data: dict - Datos del CV
+    
+    Returns:
+        Score ATS y recomendaciones
+    """
+    try:
+        ats_analysis = analyze_ats_compatibility(cv_data)
+        
+        # Generar recomendaciones basadas en issues
+        recommendations = []
+        if "missing_personal_info" in ats_analysis['issues']:
+            recommendations.append("❌ Add complete personal information (name, email, phone)")
+        if "missing_work_experience" in ats_analysis['issues']:
+            recommendations.append("❌ Add work experience section")
+        if "missing_skills" in ats_analysis['issues']:
+            recommendations.append("❌ Add a skills section with relevant technologies")
+        if "low_keyword_density" in ats_analysis['issues']:
+            recommendations.append("⚠️ Increase keyword density - add more technical terms")
+        if "incomplete_experience_info" in ats_analysis['issues']:
+            recommendations.append("⚠️ Complete all experience entries (position, company, dates)")
+        if "too_short" in ats_analysis['issues']:
+            recommendations.append("📝 CV is too short - expand with more details")
+        if "too_long" in ats_analysis['issues']:
+            recommendations.append("✂️ CV is too long - condense to 1-2 pages")
+        
+        if not recommendations:
+            recommendations = ["✅ Your CV meets ATS compatibility standards!"]
+        
+        return {
+            "success": True,
+            "ats_score": ats_analysis['score'],
+            "rating": ats_analysis['rating'],
+            "analysis": ats_analysis,
+            "recommendations": recommendations,
+            "cost": "FREE - No tokens used"
+        }
+    
+    except Exception as e:
+        print(f"❌ Error en ATS check: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
